@@ -27,7 +27,7 @@ export function Navbar() {
                 <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <img src={logo} alt="shxdowmouse" className="h-10 w-auto relative z-10" />
               </div>
-              <span className="font-display font-bold text-xl tracking-wide">SHXDOW</span>
+              <span className="font-display font-bold text-xl tracking-wide">shxdowmouse</span>
             </div>
           </Link>
 
