@@ -3,5 +3,5 @@ services:
     name: shxdowmouse
     env: node
     plan: free
-    buildCommand: npm ci && npx tsx script/build.ts
+    buildCommand: npm install && npm run build
     startCommand: npm start
