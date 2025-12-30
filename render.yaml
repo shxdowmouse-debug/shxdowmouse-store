@@ -3,5 +3,5 @@ services:
     name: shxdowmouse
     env: node
     plan: free
-    buildCommand: npm ci --legacy-peer-deps && npm run build
+    buildCommand: npm cache clean --force && npm install && npm run build
     startCommand: npm start
