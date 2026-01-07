@@ -28,7 +28,7 @@ export default function Home() {
       <div className="h-screen w-full flex flex-col items-center justify-center bg-black text-white gap-6">
         <h1 className="text-4xl font-display font-bold text-red-500">System Failure</h1>
         <p className="text-muted-foreground max-w-md text-center">
-          Could not load product data. The shadow has consumed the connection.
+          Could not load product data. The shxdow has consumed the connection.
         </p>
         <button 
           onClick={() => window.location.reload()}
@@ -118,10 +118,10 @@ export default function Home() {
               <a href="/privacy" className="hover:text-white transition-colors" data-testid="link-privacy">Privacy</a>
               <a href="/terms" className="hover:text-white transition-colors" data-testid="link-terms">Terms</a>
               <a href="/support" className="hover:text-white transition-colors" data-testid="link-support">Support</a>
-              <a href="#" className="hover:text-white transition-colors">Drivers</a>
+              <a href="#" className="hover:text-white transition-colors">Home</a>
             </div>
             <p className="text-xs text-white/20">
-              (c) 2026 shxdowmouse inc. All rights reserved.
+              © 2026 shxdowmouse inc. All rights reserved.
             </p>
           </div>
         </footer>
