@@ -102,7 +102,7 @@ export default function Home() {
                     <img
                       src={productImage}
                       alt="shxdowmouse one"
-                      className="h-full w-full object-contain p-1 md:p-8"
+                      className="h-full w-full object-cover p-0"
                     />
                   </div>
                 </div>
