@@ -119,7 +119,7 @@ export function ProductHero({ product }: ProductHeroProps) {
             <img
               src={Copilot_20251218_154313}
               alt={product.name}
-              className="w-64 sm:w-80 md:w-full h-auto object-contain drop-shadow-[0_20px_50px_rgba(255,255,255,0.15)] hover:-translate-y-4 transition-transform duration-500 rounded-3xl mx-auto"
+              className="w-80 sm:w-80 md:w-full h-auto object-contain drop-shadow-[0_20px_50px_rgba(255,255,255,0.15)] hover:-translate-y-4 transition-transform duration-500 rounded-3xl mx-auto"
             />
           </div>
         </motion.div>
