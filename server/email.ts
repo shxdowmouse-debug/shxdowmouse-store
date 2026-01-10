@@ -26,12 +26,12 @@ export async function sendEmail(
     console.log("[EMAIL] Sending email", {
       to,
       subject,
-      hasHtml: !!html,
+      hasHtml: Boolean(html),
       replyTo,
     });
 
     const result = await resend.emails.send({
-      from: '"SHXDOWMOUSE" <onboarding@resend.dev>',
+      from: 'SHXDOWMOUSE <onboarding@resend.dev>',
       to,
       subject,
       html,
