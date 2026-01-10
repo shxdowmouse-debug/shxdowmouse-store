@@ -8,11 +8,18 @@ export async function sendEmail(
   html: string,
   replyTo?: string
 ) {
-  await resend.emails.send({
-    from: "Shxdowmouse <onboarding@resend.dev>",
-    to,
-    subject,
-    html,
-    ...(replyTo && { reply_to: replyTo })
-  });
+  try {
+    const result = await resend.emails.send({
+      from: "Shxdowmouse <onboarding@resend.dev>",
+      to,
+      subject,
+      html,
+      reply_to: replyTo,
+    });
+
+    return result;
+  } catch (error) {
+    console.error("Resend email error:", error);
+    return { error };
+  }
 }
