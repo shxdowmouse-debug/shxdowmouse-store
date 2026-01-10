@@ -81,12 +81,7 @@ function waitlistTemplate() {
   `;
 }
 
-function supportTemplate(
-  name: string,
-  email: string,
-  subject: string,
-  message: string
-) {
+function supportTemplate(name: string, email: string, subject: string, message: string) {
   return `
   <html>
     <head>
@@ -171,10 +166,7 @@ function isValidEmail(value: unknown): value is string {
 // ROUTES
 // ------------------------------------------------------------
 
-export async function registerRoutes(
-  httpServer: Server,
-  app: Express
-): Promise<Server> {
+export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
   // ----------------------------------------------------------
   // Seed database with default product if empty
   // ----------------------------------------------------------
@@ -254,17 +246,12 @@ export async function registerRoutes(
 
   // ----------------------------------------------------------
   // WAITLIST EMAIL
-  // Frontend should call: POST /api/notify
   // ----------------------------------------------------------
 
   app.post("/api/notify", async (req, res) => {
     const { email } = req.body ?? {};
 
     console.log("[WAITLIST] Route hit with payload:", req.body);
-    console.log(
-      "[WAITLIST] RESEND_API_KEY loaded:",
-      !!process.env.RESEND_API_KEY
-    );
 
     if (!email || typeof email !== "string") {
       return res.status(400).json({ message: "Email is required" });
@@ -287,15 +274,12 @@ export async function registerRoutes(
       });
     } catch (error) {
       console.error("[WAITLIST] Email error:", error);
-      res
-        .status(500)
-        .json({ message: "Failed to send confirmation email" });
+      res.status(500).json({ message: "Failed to send confirmation email" });
     }
   });
 
   // ----------------------------------------------------------
   // SUPPORT EMAIL
-  // Frontend: POST /api/support
   // ----------------------------------------------------------
 
   app.post("/api/support", async (req, res) => {
@@ -316,8 +300,7 @@ export async function registerRoutes(
       return res.status(400).json({ message: "Invalid email format" });
     }
 
-    const supportInbox =
-      process.env.SUPPORT_EMAIL || "onboarding@resend.dev";
+    const supportInbox = process.env.SUPPORT_EMAIL || "onboarding@resend.dev";
 
     try {
       await sendEmail(
