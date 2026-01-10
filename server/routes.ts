@@ -259,7 +259,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
     try {
       await sendEmail(
-        process.env.SUPPORT_EMAIL || "support@shxdowmouse.com",
+        process.env.SUPPORT_EMAIL || "onboarding@resend.dev",
         `Support: ${subject}`,
         supportTemplate(name, email, subject, message),
         email
