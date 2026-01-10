@@ -3,7 +3,7 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
-import nodemailer from "nodemailer";
+import { sendEmail } from "./email";
 
 export async function registerRoutes(httpServer: Server, app: Express): Promise<Server> {
   // Seed database with default product if empty
@@ -54,27 +54,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
-  // Email helper
-  const sendEmail = async (to: string, subject: string, html: string, replyTo?: string) => {
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS
-      }
-    });
-
-    await transporter.sendMail({
-      from: process.env.GMAIL_USER,
-      to,
-      subject,
-      html,
-      ...(replyTo && { replyTo })
-    });
-  };
-
   // Notification signup
   app.post("/api/notify", async (req, res) => {
     const { email } = req.body;
@@ -94,6 +73,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         "You're on the list – shxdowmouse",
         `<p>Thanks for signing up for <strong>shxdowmouse</strong>. We'll notify you when we launch!</p>`
       );
+
       res.json({ success: true, message: "Confirmation email sent successfully" });
     } catch (error) {
       console.error("Notification error:", error);
@@ -116,11 +96,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
     try {
       await sendEmail(
-        process.env.GMAIL_USER!,
+        process.env.SUPPORT_EMAIL || "support@shxdowmouse.com",
         `New support message: ${subject}`,
         `<p><strong>From:</strong> ${name} (${email})</p><p><strong>Message:</strong><br>${message}</p>`,
         email
       );
+
       res.json({ success: true, message: "Message sent successfully" });
     } catch (error) {
       console.error("Support form error:", error);
