@@ -209,6 +209,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   // ------------------------------------------------------------
 
   app.post("/waitlist.notify", async (req, res) => {
+    console.log("WAITLIST ROUTE HIT:", req.body.email);
+    console.log("RESEND KEY LOADED:", !!process.env.RESEND_API_KEY);
+
     const { email } = req.body;
 
     if (!email || typeof email !== "string") {
@@ -221,15 +224,19 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
 
     try {
+      console.log("SENDING EMAIL TO:", email);
+
       await sendEmail(
         email,
         "You're on the list – SHXDOWMOUSE",
         waitlistTemplate()
       );
 
+      console.log("EMAIL SENT SUCCESSFULLY");
+
       res.json({ success: true, message: "Confirmation email sent successfully" });
     } catch (error) {
-      console.error("Waitlist error:", error);
+      console.error("EMAIL ERROR:", error);
       res.status(500).json({ message: "Failed to send confirmation email" });
     }
   });
