@@ -18,7 +18,7 @@ export function ProductHero({ product }: ProductHeroProps) {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/notify", {
+      const res = await fetch("/waitlist.notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email })
