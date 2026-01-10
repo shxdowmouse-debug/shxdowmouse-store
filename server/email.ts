@@ -1,15 +1,12 @@
-// server/email.ts
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const apiKey = process.env.RESEND_API_KEY;
-
-if (!apiKey) {
-  console.error(
-    "[EMAIL] RESEND_API_KEY is missing. Emails will fail until this is set in the environment."
-  );
-}
-
-const resend = new Resend(apiKey);
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+});
 
 export async function sendEmail(
   to: string,
@@ -17,36 +14,19 @@ export async function sendEmail(
   html: string,
   replyTo?: string
 ) {
-  if (!apiKey) {
-    console.error("[EMAIL] Attempted to send email without RESEND_API_KEY.");
-    throw new Error("RESEND_API_KEY not configured");
-  }
-
   try {
-    console.log("[EMAIL] Sending email", {
-      to,
-      subject,
-      hasHtml: Boolean(html),
-      replyTo,
-    });
-
-    const result = await resend.emails.send({
-      from: 'SHXDOWMOUSE <onboarding@resend.dev>',
+    const info = await transporter.sendMail({
+      from: `"SHXDOWMOUSE" <${process.env.GMAIL_USER}>`,
       to,
       subject,
       html,
-      reply_to: replyTo,
+      ...(replyTo && { replyTo }),
     });
 
-    console.log("[EMAIL] Email sent successfully", {
-      to,
-      subject,
-      id: (result as any)?.id,
-    });
-
-    return result;
+    console.log("[GMAIL] Email sent:", info.messageId);
+    return info;
   } catch (error) {
-    console.error("[EMAIL] Resend email error:", error);
+    console.error("[GMAIL] Error sending email:", error);
     throw error;
   }
 }
