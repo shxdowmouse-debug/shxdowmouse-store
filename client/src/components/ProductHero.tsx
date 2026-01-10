@@ -3,6 +3,13 @@ import { Button } from "@/components/ui/button";
 import type { Product } from "@shared/schema";
 import Copilot_20251218_154313 from "@assets/Copilot_20251218_154313.png";
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface ProductHeroProps {
   product: Product;
@@ -10,9 +17,11 @@ interface ProductHeroProps {
 
 export function ProductHero({ product }: ProductHeroProps) {
   const [loading, setLoading] = useState(false);
+  const [notifyOpen, setNotifyOpen] = useState(false);
+  const [email, setEmail] = useState("");
 
-  const handleNotifyClick = async () => {
-    const email = prompt("Enter your email to get notified:");
+  const handleNotifySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!email) return;
 
     setLoading(true);
@@ -28,6 +37,8 @@ export function ProductHero({ product }: ProductHeroProps) {
 
       if (res.ok) {
         alert("You're on the list!");
+        setNotifyOpen(false);
+        setEmail("");
       } else {
         alert(data.message || "Failed to send confirmation email.");
       }
@@ -76,11 +87,10 @@ export function ProductHero({ product }: ProductHeroProps) {
           <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
             <Button
               size="lg"
-              onClick={handleNotifyClick}
-              disabled={loading}
+              onClick={() => setNotifyOpen(true)}
               className="h-14 px-8 rounded-2xl text-lg font-semibold bg-white text-black hover:bg-white/90 hover:-translate-y-1 transition-all shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)]"
             >
-              {loading ? "Sending..." : "Notify Me"}
+              Notify Me
             </Button>
 
             <Button
@@ -111,10 +121,8 @@ export function ProductHero({ product }: ProductHeroProps) {
           transition={{ duration: 1, delay: 0.4, type: "spring" }}
           className="relative group flex justify-center"
         >
-          {/* Glow behind image */}
           <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent rounded-full blur-2xl scale-75 group-hover:scale-90 transition-transform duration-700 opacity-50" />
 
-          {/* Image */}
           <div className="relative z-10 aspect-square flex items-center justify-center">
             <img
               src={Copilot_20251218_154313}
@@ -125,6 +133,37 @@ export function ProductHero({ product }: ProductHeroProps) {
         </motion.div>
 
       </div>
+
+      {/* NOTIFY MODAL */}
+      <Dialog open={notifyOpen} onOpenChange={setNotifyOpen}>
+        <DialogContent className="bg-black/90 border border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Get Notified</DialogTitle>
+            <DialogDescription className="text-white/70">
+              Enter your email and we’ll notify you when SHXDOWMOUSE launches.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleNotifySubmit} className="space-y-4 mt-4">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full p-3 rounded-xl bg-white/10 border border-white/20 focus:outline-none"
+            />
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full h-12 rounded-xl bg-white text-black hover:bg-white/90"
+            >
+              {loading ? "Sending..." : "Notify Me"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
