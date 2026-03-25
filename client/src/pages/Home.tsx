@@ -79,13 +79,13 @@ export default function Home() {
                     
                     <ul className="space-y-3 text-sm text-muted-foreground mb-8">
                       <li className="flex items-center gap-2">
-                        <span className="text-white/40">•</span> Ultra lightweight
+                        <span className="text-white/40">•</span> 25g Ultra Lightweight design
                       </li>
                       <li className="flex items-center gap-2">
-                        <span className="text-white/40">•</span> Wireless
+                        <span className="text-white/40">•</span> Tri-Mode Connectivity
                       </li>
                       <li className="flex items-center gap-2">
-                        <span className="text-white/40">•</span> Precision tracking sensor
+                        <span className="text-white/40">•</span> 25,000 DPI Optical Sensor
                       </li>
                     </ul>
 
