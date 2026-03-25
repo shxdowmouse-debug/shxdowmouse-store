@@ -7,7 +7,7 @@ import { useProduct } from "@/hooks/use-products";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import productImage from "@assets/IMG_20251222_151603_1766416627210.png";
+import productImage from "@assets/lMG_20251222_151603_1766416627210.png";
 
 export default function Home() {
   // Assume product ID 1 is the main product as per requirements
