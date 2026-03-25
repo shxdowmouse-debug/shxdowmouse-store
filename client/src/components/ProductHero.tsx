@@ -140,7 +140,7 @@ export function ProductHero({ product }: ProductHeroProps) {
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">Get Notified</DialogTitle>
             <DialogDescription className="text-white/70">
-              Enter your email and we’ll notify you when SHXDOWMOUSE launches.
+              Enter your email and we’ll notify you when shxdowmouse launches.
             </DialogDescription>
           </DialogHeader>
 
