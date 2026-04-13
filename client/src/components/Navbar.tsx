@@ -36,7 +36,7 @@ export function Navbar({ onBuyClick }: NavbarProps) {
             onClick={onBuyClick}
             className="rounded-2xl font-semibold px-6 bg-white text-black hover:bg-white/90 hover:scale-105 transition-all duration-200"
           >
-            Pre-order Now
+            Buy Now
           </Button>
         </div>
       </div>
