@@ -1,120 +1,82 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { type Product } from "@shared/schema";
-import { Loader2 } from "lucide-react";
-import { useState } from "react";
 
-const formSchema = z.object({
-  customerEmail: z.string().email("Please enter a valid email"),
-});
-
-type FormValues = z.infer<typeof formSchema>;
-
-interface OrderModalProps {
+interface BuyModalProps {
   isOpen: boolean;
   onClose: () => void;
-  product: Product;
+  product: any; // or Product type
 }
 
-export function OrderModal({ isOpen, onClose, product }: OrderModalProps) {
-  const [success, setSuccess] = useState(false);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      customerEmail: "",
-    },
-  });
+export function BuyModal({ isOpen, onClose, product }: BuyModalProps) {
+  if (!product) return null;
 
-  const onSubmit = async (data: FormValues) => {
-    try {
-      const response = await fetch("/api/notify", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: data.customerEmail }),
-      });
+  const handleBuy = async () => {
+    const stripe = await stripePromise;
 
-      if (!response.ok) {
-        const error = await response.json();
-        form.setError("customerEmail", {
-          type: "manual",
-          message: error.message || "Failed to send confirmation email",
-        });
-        return;
-      }
+    const res = await fetch("/api/create-checkout-session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        productId: product.id,
+      }),
+    });
 
-      setSuccess(true);
-      setTimeout(() => {
-        setSuccess(false);
-        onClose();
-        form.reset();
-      }, 3000);
-    } catch (error) {
-      form.setError("customerEmail", {
-        type: "manual",
-        message: "An error occurred. Please try again.",
-      });
+    const session = await res.json();
+
+    if (session?.id) {
+      await stripe?.redirectToCheckout({ sessionId: session.id });
+    } else {
+      alert("Failed to start checkout.");
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] bg-card/95 backdrop-blur-xl border-white/10 text-white rounded-3xl p-8">
+      <DialogContent className="sm:max-w-[600px] bg-card/95 backdrop-blur-xl border-white/10 text-white rounded-3xl p-8">
         <DialogHeader>
-          <DialogTitle className="text-3xl font-display font-bold">Stay Updated</DialogTitle>
+          <DialogTitle className="text-3xl font-display font-bold">
+            {product.name}
+          </DialogTitle>
           <DialogDescription className="text-white/60 text-base">
-            Get updates about <span className="text-white font-semibold">{product.name}</span> and future shxdowmouse releases.
+            Ultra‑lightweight performance engineered for competitive play.
           </DialogDescription>
         </DialogHeader>
 
-        {success ? (
-          <div className="py-12 flex flex-col items-center text-center space-y-4 animate-in fade-in zoom-in duration-300">
-            <div className="w-16 h-16 rounded-full bg-white text-black flex items-center justify-center mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-8 h-8">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-              </svg>
-            </div>
-            <h3 className="text-2xl font-bold font-display">You're Subscribed</h3>
-            <p className="text-muted-foreground">You'll receive updates about shxdowmouse products and availability.</p>
+        <div className="mt-6 space-y-6">
+          <div className="w-full flex justify-center">
+            <img
+              src={product.image}
+              alt={product.name}
+              className="w-64 h-auto object-contain rounded-2xl drop-shadow-[0_20px_40px_rgba(255,255,255,0.1)]"
+            />
           </div>
-        ) : (
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
-              <FormField
-                control={form.control}
-                name="customerEmail"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-white/80">Email Address</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="email" 
-                        placeholder="your@email.com" 
-                        {...field} 
-                        className="h-12 rounded-2xl bg-white/5 border-white/10 focus:border-white/30 transition-all placeholder:text-white/20"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
-              <Button 
-                type="submit"
-                className="w-full h-14 rounded-2xl text-lg font-bold bg-white text-black hover:bg-white/90 hover:scale-[1.02] active:scale-[0.98] transition-all"
-              >
-                Notify Me
-              </Button>
-            </form>
-          </Form>
-        )}
+          <p className="text-muted-foreground leading-relaxed">
+            {product.description}
+          </p>
+
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            <li>• 25g Ultra Lightweight</li>
+            <li>• Tri‑Mode Connectivity</li>
+            <li>• 25,000 DPI Optical Sensor</li>
+          </ul>
+
+          <Button
+            className="w-full h-14 rounded-2xl text-lg font-bold bg-white text-black hover:bg-white/90 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            onClick={handleBuy}
+          >
+            Buy Now
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
