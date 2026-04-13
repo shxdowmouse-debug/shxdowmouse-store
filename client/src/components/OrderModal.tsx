@@ -5,12 +5,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { insertOrderSchema, type Product } from "@shared/schema";
-import { useCreateOrder } from "@/hooks/use-orders";
+import { type Product } from "@shared/schema";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
-// Extend the schema for form validation
 const formSchema = z.object({
   customerEmail: z.string().email("Please enter a valid email"),
 });
@@ -24,7 +22,6 @@ interface OrderModalProps {
 }
 
 export function OrderModal({ isOpen, onClose, product }: OrderModalProps) {
-  const { mutate: createOrder, isPending } = useCreateOrder();
   const [success, setSuccess] = useState(false);
 
   const form = useForm<FormValues>({
@@ -71,9 +68,9 @@ export function OrderModal({ isOpen, onClose, product }: OrderModalProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px] bg-card/95 backdrop-blur-xl border-white/10 text-white rounded-3xl p-8">
         <DialogHeader>
-          <DialogTitle className="text-3xl font-display font-bold">Get Notified</DialogTitle>
+          <DialogTitle className="text-3xl font-display font-bold">Stay Updated</DialogTitle>
           <DialogDescription className="text-white/60 text-base">
-            Join the shadows. We'll notify you when <span className="text-white font-semibold">{product.name}</span> launches.
+            Get updates about <span className="text-white font-semibold">{product.name}</span> and future shxdowmouse releases.
           </DialogDescription>
         </DialogHeader>
 
@@ -84,8 +81,8 @@ export function OrderModal({ isOpen, onClose, product }: OrderModalProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
               </svg>
             </div>
-            <h3 className="text-2xl font-bold font-display">You're On The List</h3>
-            <p className="text-muted-foreground">We'll notify you when shxdowmouse launches.</p>
+            <h3 className="text-2xl font-bold font-display">You're Subscribed</h3>
+            <p className="text-muted-foreground">You'll receive updates about shxdowmouse products and availability.</p>
           </div>
         ) : (
           <Form {...form}>
