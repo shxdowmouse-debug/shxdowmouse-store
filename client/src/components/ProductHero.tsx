@@ -36,7 +36,7 @@ export function ProductHero({ product }: ProductHeroProps) {
       const data = await res.json();
 
       if (res.ok) {
-        alert("You're on the list!");
+        alert("You're subscribed.");
         setNotifyOpen(false);
         setEmail("");
       } else {
@@ -66,31 +66,30 @@ export function ProductHero({ product }: ProductHeroProps) {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="space-y-8 text-center lg:text-left"
         >
-          {/* Coming Soon Badge */}
+          {/* Badge (now released) */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm font-medium text-white/80 mx-auto lg:mx-0">
-            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            Coming Soon
+            Available Now
           </div>
 
           {/* Heading */}
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold leading-[0.9] tracking-tighter text-center lg:text-left break-words">
             SHXDOWMOUSE <br />
-            IS HERE
+            HAS ARRIVED
           </h1>
 
           {/* Description */}
           <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
-            {product.description} An ultra-lightweight wireless gaming mouse designed for e-sports professionals who demand perfection.
+            {product.description} Engineered for competitive players who demand precision, speed, and a flawless wireless experience.
           </p>
 
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
             <Button
               size="lg"
-              onClick={() => setNotifyOpen(true)}
               className="h-14 px-8 rounded-2xl text-lg font-semibold bg-white text-black hover:bg-white/90 hover:-translate-y-1 transition-all shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)]"
+              onClick={() => window.location.href = "#products"}
             >
-              Notify Me
+              Buy Now
             </Button>
 
             <Button
@@ -134,13 +133,13 @@ export function ProductHero({ product }: ProductHeroProps) {
 
       </div>
 
-      {/* NOTIFY MODAL */}
+      {/* EMAIL SIGNUP MODAL */}
       <Dialog open={notifyOpen} onOpenChange={setNotifyOpen}>
         <DialogContent className="bg-black/90 border border-white/10 text-white">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">Get Notified</DialogTitle>
+            <DialogTitle className="text-2xl font-bold">Stay Updated</DialogTitle>
             <DialogDescription className="text-white/70">
-              Enter your email and we’ll notify you when shxdowmouse launches.
+              Get updates about new shxdowmouse products, drops, and availability.
             </DialogDescription>
           </DialogHeader>
 
@@ -159,7 +158,7 @@ export function ProductHero({ product }: ProductHeroProps) {
               disabled={loading}
               className="w-full h-12 rounded-xl bg-white text-black hover:bg-white/90"
             >
-              {loading ? "Sending..." : "Notify Me"}
+              {loading ? "Sending..." : "Subscribe"}
             </Button>
           </form>
         </DialogContent>
