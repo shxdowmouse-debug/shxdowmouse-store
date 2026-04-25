@@ -1,0 +1,399 @@
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Users, Package, Mail, Send, LogOut, TrendingUp, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+interface DashboardStats {
+  totalOrders: number;
+  totalWaitlistSignups: number;
+  pendingOrders: number;
+  recentOrders: any[];
+}
+
+interface Waitlist {
+  id: number;
+  email: string;
+  name?: string;
+  createdAt: string;
+}
+
+interface Order {
+  id: number;
+  productId: number;
+  quantity: number;
+  customerName: string;
+  customerEmail: string;
+  address: string;
+  status: string;
+  createdAt: string;
+}
+
+export function AdminDashboard({ adminToken }: { adminToken: string }) {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [waitlist, setWaitlist] = useState<Waitlist[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [activeTab, setActiveTab] = useState<"overview" | "waitlist" | "orders" | "broadcast">("overview");
+  const [loading, setLoading] = useState(true);
+  const [broadcastSubject, setBroadcastSubject] = useState("");
+  const [broadcastMessage, setBroadcastMessage] = useState("");
+  const [broadcastLoading, setBroadcastLoading] = useState(false);
+  const [broadcastSuccess, setBroadcastSuccess] = useState("");
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const headers = { Authorization: `Bearer ${adminToken}` };
+
+      const [statsRes, waitlistRes, ordersRes] = await Promise.all([
+        fetch("/api/admin/stats", { headers }),
+        fetch("/api/admin/waitlist", { headers }),
+        fetch("/api/admin/orders", { headers }),
+      ]);
+
+      if (statsRes.ok) setStats(await statsRes.json());
+      if (waitlistRes.ok) setWaitlist(await waitlistRes.json());
+      if (ordersRes.ok) setOrders(await ordersRes.json());
+    } catch (error) {
+      console.error("Failed to fetch dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBroadcast = async () => {
+    if (!broadcastSubject || !broadcastMessage) {
+      alert("Please fill in both subject and message");
+      return;
+    }
+
+    try {
+      setBroadcastLoading(true);
+      const response = await fetch("/api/admin/broadcast", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
+        },
+        body: JSON.stringify({
+          subject: broadcastSubject,
+          message: broadcastMessage,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setBroadcastSuccess(`Email sent to ${result.count} subscribers!`);
+        setBroadcastSubject("");
+        setBroadcastMessage("");
+        setTimeout(() => setBroadcastSuccess(""), 3000);
+      } else {
+        alert("Failed to send broadcast");
+      }
+    } catch (error) {
+      console.error("Broadcast error:", error);
+      alert("Error sending broadcast");
+    } finally {
+      setBroadcastLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("adminToken");
+    window.location.reload();
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="text-white">Loading dashboard...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-black via-black to-[#1a1a1a] text-white p-6">
+      {/* Header */}
+      <div className="max-w-7xl mx-auto mb-8 flex justify-between items-center">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <h1 className="text-4xl font-display font-bold">Admin Dashboard</h1>
+          <p className="text-white/50 mt-2">Manage shxdowmouse platform</p>
+        </motion.div>
+        <Button
+          onClick={handleLogout}
+          className="gap-2 bg-red-600 hover:bg-red-700"
+        >
+          <LogOut className="w-4 h-4" />
+          Logout
+        </Button>
+      </div>
+
+      {/* Stats Cards */}
+      {stats && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-7xl mx-auto mb-8"
+        >
+          <StatCard
+            icon={<Package className="w-6 h-6" />}
+            label="Total Orders"
+            value={stats.totalOrders}
+            color="from-blue-600 to-blue-400"
+          />
+          <StatCard
+            icon={<Clock className="w-6 h-6" />}
+            label="Pending Orders"
+            value={stats.pendingOrders}
+            color="from-yellow-600 to-yellow-400"
+          />
+          <StatCard
+            icon={<Users className="w-6 h-6" />}
+            label="Waitlist Signups"
+            value={stats.totalWaitlistSignups}
+            color="from-purple-600 to-purple-400"
+          />
+          <StatCard
+            icon={<TrendingUp className="w-6 h-6" />}
+            label="Growth Rate"
+            value={`+${stats.totalWaitlistSignups > 0 ? Math.round((stats.totalOrders / stats.totalWaitlistSignups) * 100) : 0}%`}
+            color="from-green-600 to-green-400"
+          />
+        </motion.div>
+      )}
+
+      {/* Navigation Tabs */}
+      <div className="max-w-7xl mx-auto mb-8 flex gap-4 border-b border-white/10 pb-4">
+        {(["overview", "waitlist", "orders", "broadcast"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-4 py-2 font-medium transition-colors ${
+              activeTab === tab
+                ? "text-white border-b-2 border-white"
+                : "text-white/50 hover:text-white"
+            }`}
+          >
+            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab Content */}
+      <div className="max-w-7xl mx-auto">
+        {/* Overview Tab */}
+        {activeTab === "overview" && stats && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-6"
+          >
+            <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+              <h3 className="text-xl font-bold mb-4">Recent Orders</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="border-b border-white/10">
+                    <tr>
+                      <th className="text-left py-3">Customer</th>
+                      <th className="text-left py-3">Email</th>
+                      <th className="text-left py-3">Status</th>
+                      <th className="text-left py-3">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stats.recentOrders.map((order) => (
+                      <tr key={order.id} className="border-b border-white/5">
+                        <td className="py-3">{order.customerName}</td>
+                        <td className="py-3 text-white/50">{order.customerEmail}</td>
+                        <td className="py-3">
+                          <span
+                            className={`px-2 py-1 rounded text-xs font-medium ${
+                              order.status === "pending"
+                                ? "bg-yellow-600/20 text-yellow-300"
+                                : "bg-green-600/20 text-green-300"
+                            }`}
+                          >
+                            {order.status}
+                          </span>
+                        </td>
+                        <td className="py-3 text-white/50">
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Waitlist Tab */}
+        {activeTab === "waitlist" && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-white/5 border border-white/10 rounded-lg p-6"
+          >
+            <h3 className="text-xl font-bold mb-4">Waitlist ({waitlist.length})</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b border-white/10">
+                  <tr>
+                    <th className="text-left py-3">Email</th>
+                    <th className="text-left py-3">Name</th>
+                    <th className="text-left py-3">Signup Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {waitlist.map((entry) => (
+                    <tr key={entry.id} className="border-b border-white/5">
+                      <td className="py-3">{entry.email}</td>
+                      <td className="py-3 text-white/50">{entry.name || "-"}</td>
+                      <td className="py-3 text-white/50">
+                        {new Date(entry.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Orders Tab */}
+        {activeTab === "orders" && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-white/5 border border-white/10 rounded-lg p-6"
+          >
+            <h3 className="text-xl font-bold mb-4">All Orders ({orders.length})</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b border-white/10">
+                  <tr>
+                    <th className="text-left py-3">ID</th>
+                    <th className="text-left py-3">Customer</th>
+                    <th className="text-left py-3">Qty</th>
+                    <th className="text-left py-3">Status</th>
+                    <th className="text-left py-3">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((order) => (
+                    <tr key={order.id} className="border-b border-white/5">
+                      <td className="py-3">#{order.id}</td>
+                      <td className="py-3">{order.customerName}</td>
+                      <td className="py-3">{order.quantity}</td>
+                      <td className="py-3">
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-medium ${
+                            order.status === "pending"
+                              ? "bg-yellow-600/20 text-yellow-300"
+                              : "bg-green-600/20 text-green-300"
+                          }`}
+                        >
+                          {order.status}
+                        </span>
+                      </td>
+                      <td className="py-3 text-white/50">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Broadcast Tab */}
+        {activeTab === "broadcast" && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-white/5 border border-white/10 rounded-lg p-6 max-w-2xl"
+          >
+            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+              <Mail className="w-5 h-5" />
+              Send Broadcast Email
+            </h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Subject</label>
+                <input
+                  type="text"
+                  value={broadcastSubject}
+                  onChange={(e) => setBroadcastSubject(e.target.value)}
+                  placeholder="Email subject line"
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder:text-white/30"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Message (HTML)</label>
+                <textarea
+                  value={broadcastMessage}
+                  onChange={(e) => setBroadcastMessage(e.target.value)}
+                  placeholder="Enter your HTML email message here..."
+                  rows={10}
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder:text-white/30"
+                />
+              </div>
+
+              {broadcastSuccess && (
+                <div className="bg-green-600/20 border border-green-600/50 text-green-300 px-4 py-3 rounded-lg">
+                  {broadcastSuccess}
+                </div>
+              )}
+
+              <Button
+                onClick={handleBroadcast}
+                disabled={broadcastLoading}
+                className="w-full gap-2 bg-blue-600 hover:bg-blue-700"
+              >
+                <Send className="w-4 h-4" />
+                {broadcastLoading ? "Sending..." : "Send to All Subscribers"}
+              </Button>
+            </div>
+
+            <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-lg">
+              <p className="text-sm text-white/50">
+                💡 Tip: Use HTML formatting for better email design. The message will be styled automatically.
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function StatCard({
+  icon,
+  label,
+  value,
+  color,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string | number;
+  color: string;
+}) {
+  return (
+    <div className={`bg-gradient-to-br ${color} p-6 rounded-lg text-black`}>
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-black/70 text-sm font-medium">{label}</p>
+          <p className="text-3xl font-bold mt-2">{value}</p>
+        </div>
+        <div className="opacity-30">{icon}</div>
+      </div>
+    </div>
+  );
+}

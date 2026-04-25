@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { sendEmail } from "./email";
+import { verifyAdminAuth } from "./auth";
 
 // ------------------------------------------------------------
 // EMAIL TEMPLATES
@@ -16,65 +17,107 @@ function waitlistTemplate() {
     <head>
       <meta name="color-scheme" content="dark light">
       <meta name="supported-color-schemes" content="dark light">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
       <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
-        body {
+        * {
           margin: 0;
           padding: 0;
-          background: #000;
+          box-sizing: border-box;
+        }
+
+        body {
+          background: linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
           color: #fff;
           font-family: 'Space Grotesk', sans-serif;
+          padding: 20px;
+        }
+
+        .wrapper {
+          max-width: 600px;
+          margin: 0 auto;
         }
 
         .container {
-          max-width: 480px;
-          margin: 0 auto;
-          padding: 40px 24px;
-          background: #0a0a0a;
-          border-radius: 12px;
+          background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 16px;
+          padding: 48px 32px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         }
 
         .logo {
-          width: 48px;
+          width: 56px;
+          height: 56px;
           margin-bottom: 24px;
         }
 
         h1 {
-          font-size: 24px;
-          font-weight: 600;
-          margin-bottom: 12px;
+          font-size: 32px;
+          font-weight: 700;
+          margin-bottom: 24px;
+          background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          letter-spacing: -0.5px;
         }
 
         p {
           font-size: 16px;
-          line-height: 1.6;
-          opacity: 0.9;
+          line-height: 1.8;
+          color: rgba(255, 255, 255, 0.85);
+          margin-bottom: 16px;
+        }
+
+        p:last-child {
+          margin-bottom: 0;
         }
 
         .footer {
           margin-top: 40px;
           font-size: 12px;
-          opacity: 0.5;
+          color: rgba(255, 255, 255, 0.4);
           text-align: center;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+          padding-top: 24px;
+        }
+
+        @media (max-width: 600px) {
+          .container {
+            padding: 32px 24px;
+          }
+
+          h1 {
+            font-size: 24px;
+          }
         }
       </style>
     </head>
 
     <body>
-      <div class="container">
-        <img class="logo" src="https://shxdowmouse.onrender.com/logo.png" alt="SHXDOWMOUSE" />
+      <div class="wrapper">
+        <div class="container">
+          <img class="logo" src="https://shxdowmouse.onrender.com/logo.png" alt="shxdowmouse" />
 
-        <h1>You're on the list.</h1>
+          <h1>You're on the list.</h1>
 
-        <p>
-          Thanks for signing up for <strong>SHXDOWMOUSE</strong>.<br />
-          You’ll be the first to know when we launch.
-        </p>
+          <p>
+            Thanks for joining the <span style="color: #fff; font-weight: 600;">shxdowmouse</span> community.
+          </p>
+          <p>
+            You're now part of an exclusive group that will get early access and insider updates about our revolutionary precision gaming mouse engineered for competitive excellence.
+          </p>
+          <p>
+            We'll keep you updated every step of the way—don't miss what's coming.
+          </p>
 
-        <p class="footer">
-          © 2026 SHXDOWMOUSE. All rights reserved.
-        </p>
+          <p class="footer">
+            © 2026 shxdowmouse. All rights reserved.<br/>
+            Precision. Innovation. Excellence.
+          </p>
+        </div>
       </div>
     </body>
   </html>
@@ -249,7 +292,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   // ----------------------------------------------------------
 
   app.post("/api/notify", async (req, res) => {
-    const { email } = req.body ?? {};
+    const { email, name } = req.body ?? {};
 
     console.log("[WAITLIST] Route hit with payload:", req.body);
 
@@ -262,9 +305,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
 
     try {
+      // Save to waitlist database
+      await storage.addToWaitlist(email, name);
+
+      // Send confirmation email
       await sendEmail(
         email,
-        "You're on the list – SHXDOWMOUSE",
+        "You're on the list – shxdowmouse",
         waitlistTemplate()
       );
 
@@ -273,8 +320,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         message: "Confirmation email sent successfully",
       });
     } catch (error) {
-      console.error("[WAITLIST] Email error:", error);
-      res.status(500).json({ message: "Failed to send confirmation email" });
+      console.error("[WAITLIST] Error:", error);
+      res.status(500).json({ message: "Failed to process signup" });
     }
   });
 
@@ -314,6 +361,72 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     } catch (error) {
       console.error("[SUPPORT] Email error:", error);
       res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
+  // ----------------------------------------------------------
+  // ADMIN DASHBOARD ROUTES
+  // ----------------------------------------------------------
+
+  // Get dashboard statistics
+  app.get("/api/admin/stats", verifyAdminAuth, async (_req, res) => {
+    try {
+      const stats = await storage.getStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("[ADMIN] GET stats error:", error);
+      res.status(500).json({ message: "Failed to fetch statistics" });
+    }
+  });
+
+  // Get all orders
+  app.get("/api/admin/orders", verifyAdminAuth, async (_req, res) => {
+    try {
+      const allOrders = await storage.getOrders();
+      res.json(allOrders);
+    } catch (error) {
+      console.error("[ADMIN] GET orders error:", error);
+      res.status(500).json({ message: "Failed to fetch orders" });
+    }
+  });
+
+  // Get all waitlist signups
+  app.get("/api/admin/waitlist", verifyAdminAuth, async (_req, res) => {
+    try {
+      const waitlistData = await storage.getWaitlist();
+      res.json(waitlistData);
+    } catch (error) {
+      console.error("[ADMIN] GET waitlist error:", error);
+      res.status(500).json({ message: "Failed to fetch waitlist" });
+    }
+  });
+
+  // Send broadcast email to all waitlist subscribers
+  app.post("/api/admin/broadcast", verifyAdminAuth, async (req, res) => {
+    const { subject, message } = req.body ?? {};
+
+    if (!subject || !message) {
+      return res.status(400).json({ message: "Subject and message are required" });
+    }
+
+    try {
+      const waitlistData = await storage.getWaitlist();
+      
+      // Send email to all waitlist subscribers
+      const sendPromises = waitlistData.map((entry) =>
+        sendEmail(entry.email, subject, `<html><body style="font-family: 'Space Grotesk', sans-serif; background: #000; color: #fff;"><div style="max-width: 600px; margin: 0 auto; padding: 40px; background: #0a0a0a; border-radius: 16px;">${message}</div></body></html>`)
+      );
+
+      await Promise.all(sendPromises);
+
+      res.json({
+        success: true,
+        message: `Broadcast email sent to ${waitlistData.length} subscribers`,
+        count: waitlistData.length,
+      });
+    } catch (error) {
+      console.error("[ADMIN] Broadcast error:", error);
+      res.status(500).json({ message: "Failed to send broadcast email" });
     }
   });
 

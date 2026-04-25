@@ -7,6 +7,7 @@ import Home from "@/pages/Home";
 import Privacy from "@/pages/Privacy";
 import TermsOfService from "@/pages/TermsOfService";
 import Support from "@/pages/Support";
+import Admin from "@/pages/Admin";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={TermsOfService} />
       <Route path="/support" component={Support} />
+      <Route path="/admin" component={Admin} />
       <Route component={NotFound} />
     </Switch>
   );
