@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { AdminLogin } from "@/components/AdminLogin";
 import { AdminDashboard } from "@/components/AdminDashboard";
-import { Helmet } from "react-helmet";
 
 export default function AdminPage() {
   const [adminToken, setAdminToken] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
+    // Set page title
+    document.title = "Admin Dashboard - shxdowmouse";
+    
     // Check if admin token exists in localStorage
     const savedToken = localStorage.getItem("adminToken");
     if (savedToken) {
@@ -24,17 +26,9 @@ export default function AdminPage() {
     );
   }
 
-  return (
-    <>
-      <Helmet>
-        <title>Admin Dashboard - shxdowmouse</title>
-        <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
-      {adminToken ? (
-        <AdminDashboard adminToken={adminToken} />
-      ) : (
-        <AdminLogin onLogin={setAdminToken} />
-      )}
-    </>
+  return adminToken ? (
+    <AdminDashboard adminToken={adminToken} />
+  ) : (
+    <AdminLogin onLogin={setAdminToken} />
   );
 }
