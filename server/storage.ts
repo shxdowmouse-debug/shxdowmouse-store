@@ -69,6 +69,11 @@ export class DatabaseStorage implements IStorage {
       recentOrders,
     };
   }
+
+  async removeFromWaitlist(email: string): Promise<boolean> {
+    const result = await db.delete(waitlist).where(eq(waitlist.email, email));
+    return true;
+  }
 }
 
 export const storage = new DatabaseStorage();

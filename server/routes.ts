@@ -11,7 +11,7 @@ import { verifyAdminAuth } from "./auth";
 // EMAIL TEMPLATES
 // ------------------------------------------------------------
 
-function waitlistTemplate() {
+function waitlistTemplate(email: string) {
   return `
   <html>
     <head>
@@ -84,6 +84,22 @@ function waitlistTemplate() {
           padding-top: 24px;
         }
 
+        .unsubscribe {
+          margin-top: 16px;
+          padding-top: 16px;
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .unsubscribe a {
+          color: rgba(255, 255, 255, 0.5);
+          text-decoration: none;
+          font-size: 11px;
+        }
+
+        .unsubscribe a:hover {
+          color: rgba(255, 255, 255, 0.7);
+        }
+
         @media (max-width: 600px) {
           .container {
             padding: 32px 24px;
@@ -116,6 +132,9 @@ function waitlistTemplate() {
           <p class="footer">
             © 2026 shxdowmouse. All rights reserved.<br/>
             Precision. Innovation. Excellence.
+            <div class="unsubscribe">
+              <a href="https://shxdowmouse.onrender.com/unsubscribe?email=${encodeURIComponent(email)}">Unsubscribe from this list</a>
+            </div>
           </p>
         </div>
       </div>
@@ -312,7 +331,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       await sendEmail(
         email,
         "You're on the list – shxdowmouse",
-        waitlistTemplate()
+        waitlistTemplate(email)
       );
 
       res.json({
@@ -361,6 +380,29 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     } catch (error) {
       console.error("[SUPPORT] Email error:", error);
       res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
+  // ----------------------------------------------------------
+  // UNSUBSCRIBE
+  // ----------------------------------------------------------
+
+  app.post("/api/unsubscribe", async (req, res) => {
+    const { email } = req.body ?? {};
+
+    if (!email || typeof email !== "string") {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    try {
+      await storage.removeFromWaitlist(email);
+      res.json({
+        success: true,
+        message: "You have been unsubscribed successfully",
+      });
+    } catch (error) {
+      console.error("[UNSUBSCRIBE] Error:", error);
+      res.status(500).json({ message: "Failed to unsubscribe" });
     }
   });
 

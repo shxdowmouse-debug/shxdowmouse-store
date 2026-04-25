@@ -8,6 +8,7 @@ import Privacy from "@/pages/Privacy";
 import TermsOfService from "@/pages/TermsOfService";
 import Support from "@/pages/Support";
 import Admin from "@/pages/Admin";
+import Unsubscribe from "@/pages/Unsubscribe";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/terms" component={TermsOfService} />
       <Route path="/support" component={Support} />
       <Route path="/admin" component={Admin} />
+      <Route path="/unsubscribe" component={Unsubscribe} />
       <Route component={NotFound} />
     </Switch>
   );
