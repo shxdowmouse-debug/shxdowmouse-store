@@ -5,27 +5,27 @@ const features = [
   {
     icon: <Crosshair className="w-8 h-8" />,
     title: "Precision Tracking",
-    description: "Pixel-perfect tracking with our custom Shadow sensor.",
+    description: "Pixel-perfect tracking powered by the PixArt PAW3311 optical sensor.",
   },
   {
     icon: <Feather className="w-8 h-8" />,
     title: "Ultralight Design",
-    description: "Engineered for speed with a honeycomb internal structure.",
+    description: "Engineered for speed with an open shell design like no other.",
   },
   {
     icon: <Wifi className="w-8 h-8" />,
     title: "Wireless Freedom",
-    description: "Lag-free connection for wired-like performance.",
+    description: "Lag-free tri-mode connectivity with true wired-like performance and zero input latency.",
   },
   {
     icon: <Zap className="w-8 h-8" />,
     title: "Optical Switches",
-    description: "Silent, responsive clicks with zero debounce delay.",
+    description: "Silent, responsive clicks with like-zero debounce delay.",
   },
   {
     icon: <Battery className="w-8 h-8" />,
     title: "Extended Battery",
-    description: "Long-lasting battery life with fast USB-C charging.",
+    description: "Long-lasting battery life with ultra-fast USB-C charging.",
   },
   {
     icon: <Mouse className="w-8 h-8" />,

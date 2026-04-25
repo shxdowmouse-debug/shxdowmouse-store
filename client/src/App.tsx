@@ -9,6 +9,7 @@ import TermsOfService from "@/pages/TermsOfService";
 import Support from "@/pages/Support";
 import Admin from "@/pages/Admin";
 import Unsubscribe from "@/pages/Unsubscribe";
+import Cookies from "@/pages/Cookies";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={TermsOfService} />
+      <Route path="/cookies" component={Cookies} />
       <Route path="/support" component={Support} />
       <Route path="/admin" component={Admin} />
       <Route path="/unsubscribe" component={Unsubscribe} />

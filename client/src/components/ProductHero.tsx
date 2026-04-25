@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import type { Product } from "@shared/schema";
 import { useState } from "react";
-import { X, Maximize2 } from "lucide-react";
+import { X } from "lucide-react";
 
 interface ProductHeroProps {
   product: Product;
@@ -19,18 +19,35 @@ export function ProductHero({ product, onBuyClick }: ProductHeroProps) {
         {/* Soft glow background */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] md:w-[800px] md:h-[800px] bg-white/[0.03] rounded-full blur-3xl pointer-events-none" />
 
-        {/* Main grid */}
-        <div className="container max-w-3xl md:max-w-5xl lg:max-w-7xl mx-auto grid items-center relative z-10">
+        {/* Main grid - Image Left, Text Right */}
+        <div className="container max-w-3xl md:max-w-5xl lg:max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 items-center gap-12 relative z-10">
 
-          {/* LEFT SIDE — TEXT */}
+          {/* LEFT SIDE — PRODUCT IMAGE */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="space-y-8 text-center"
+            className="order-2 md:order-1"
+          >
+            <div className="relative w-full max-w-md mx-auto md:mx-0 aspect-square">
+              <div className="absolute inset-0 rounded-[40px] bg-gradient-to-br from-white/10 to-white/5 blur-2xl opacity-50" />
+              <img
+                src="/images/mouse.png"
+                alt="SHXDOWMOUSE Product"
+                className="relative w-full h-full object-contain drop-shadow-2xl rounded-[40px]"
+              />
+            </div>
+          </motion.div>
+
+          {/* RIGHT SIDE — TEXT AND BUTTONS */}
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="space-y-8 text-left order-1 md:order-2"
           >
             {/* Badge (coming soon) with red flashing dot */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm font-medium text-white/80 mx-auto">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm font-medium text-white/80">
               <span className="relative w-2 h-2">
                 <span className="absolute inset-0 rounded-full bg-red-500 animate-pulse"></span>
                 <span className="absolute inset-0 rounded-full bg-red-500 opacity-75 animate-ping"></span>
@@ -39,18 +56,18 @@ export function ProductHero({ product, onBuyClick }: ProductHeroProps) {
             </div>
 
             {/* Heading */}
-            <h1 className="text-4xl sm:text-5xl md:text-7xl font-display font-bold leading-[0.9] tracking-tighter break-words">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-display font-bold leading-[0.9] tracking-tighter">
               SHXDOWMOUSE <br />
               COMING SOON
             </h1>
 
             {/* Description */}
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
+            <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed">
               Ultra-lightweight precision engineered for competitive players who demand excellence. Stay tuned for the release.
             </p>
 
             {/* Buttons */}
-            <div className="flex flex-col sm:flex-row items-center gap-4 justify-center">
+            <div className="flex flex-col gap-4 pt-4">
               <Button
                 size="lg"
                 className="h-14 px-8 rounded-2xl text-lg font-semibold bg-white text-black hover:bg-white/90 hover:-translate-y-1 transition-all shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)]"
@@ -77,33 +94,6 @@ export function ProductHero({ product, onBuyClick }: ProductHeroProps) {
               >
                 Explore Features
               </Button>
-
-              <Button
-                variant="outline"
-                size="lg"
-                className="h-14 px-8 rounded-2xl text-lg font-medium border-white/10 hover:bg-white/5 hover:text-white transition-all flex items-center gap-2"
-                onClick={() => setIsFullscreen(true)}
-              >
-                <Maximize2 className="w-5 h-5" />
-                View Product
-              </Button>
-            </div>
-          </motion.div>
-
-          {/* Product Image */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="mt-12 md:mt-0"
-          >
-            <div className="relative w-full max-w-md mx-auto aspect-square">
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/10 to-white/5 blur-2xl opacity-50" />
-              <img
-                src="/images/mouse.png"
-                alt="SHXDOWMOUSE Product"
-                className="relative w-full h-full object-contain drop-shadow-2xl"
-              />
             </div>
           </motion.div>
 

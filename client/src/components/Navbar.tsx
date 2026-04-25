@@ -8,6 +8,18 @@ interface NavbarProps {
 }
 
 export function Navbar({ onBuyClick }: NavbarProps) {
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const navHeight = 120;
+      const elementPosition = element.offsetTop - navHeight;
+      window.scrollTo({
+        top: elementPosition,
+        behavior: "smooth",
+      });
+    }
+  };
+
   return (
     <motion.nav 
       initial={{ y: -100, opacity: 0 }}
@@ -26,12 +38,18 @@ export function Navbar({ onBuyClick }: NavbarProps) {
         </Link>
 
         <div className="flex items-center gap-6">
-          <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-white transition-colors hidden md:block">
+          <button 
+            onClick={() => scrollToSection("features")} 
+            className="text-sm font-medium text-muted-foreground hover:text-white transition-colors hidden md:block cursor-pointer"
+          >
             Features
-          </a>
-          <a href="#products" className="text-sm font-medium text-muted-foreground hover:text-white transition-colors hidden md:block">
+          </button>
+          <button 
+            onClick={() => scrollToSection("products")} 
+            className="text-sm font-medium text-muted-foreground hover:text-white transition-colors hidden md:block cursor-pointer"
+          >
             Products
-          </a>
+          </button>
           <Button 
             onClick={onBuyClick}
             className="rounded-2xl font-semibold px-6 bg-white text-black hover:bg-white/90 hover:scale-105 transition-all duration-200"
