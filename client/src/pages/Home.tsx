@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Navbar } from "@/components/Navbar";
 import { ProductHero } from "@/components/ProductHero";
 import { Features } from "@/components/Features";
 import { OrderModal } from "@/components/OrderModal";
+import { ShootingStars } from "@/components/ShootingStars";
 import { useProduct } from "@/hooks/use-products";
 import { Loader2, Maximize2, X } from "lucide-react";
 import { motion } from "framer-motion";
@@ -13,6 +14,7 @@ export default function Home() {
   const { data: product, isLoading, error } = useProduct(1);
   const [isOrderOpen, setIsOrderOpen] = useState(false);
   const [isProductFullscreen, setIsProductFullscreen] = useState(false);
+  const fullscreenButtonRef = useRef<HTMLButtonElement>(null);
 
   if (isLoading) {
     return (
@@ -41,7 +43,8 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-white selection:text-black">
+    <div className="min-h-screen bg-background text-foreground selection:bg-white selection:text-black relative">
+      <ShootingStars />
       <Navbar onBuyClick={() => setIsOrderOpen(true)} />
       
       <main>
@@ -86,30 +89,33 @@ export default function Home() {
                       </li>
                     </ul>
 
-                    <Button
-                      onClick={() => setIsOrderOpen(true)}
-                      className="w-full md:w-auto h-12 px-8 rounded-2xl text-base font-semibold bg-white text-black hover:bg-white/90 transition-all"
-                    >
-                      Stay Updated
-                    </Button>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        onClick={() => setIsOrderOpen(true)}
+                        className="h-12 px-6 rounded-2xl text-base font-semibold bg-white text-black hover:bg-white/90 transition-all"
+                      >
+                        Stay Updated
+                      </Button>
 
-                    <Button
-                      onClick={() => setIsProductFullscreen(true)}
-                      size="icon"
-                      variant="outline"
-                      className="h-12 w-12 rounded-2xl border-white/10 hover:bg-white/5 transition-all"
-                      title="View Product"
-                    >
-                      <Maximize2 className="w-5 h-5" />
-                    </Button>
+                      <Button
+                        ref={fullscreenButtonRef}
+                        onClick={() => setIsProductFullscreen(true)}
+                        size="icon"
+                        variant="outline"
+                        className="h-12 w-12 rounded-2xl border-white/10 hover:bg-white/5 transition-all"
+                        title="View Product"
+                      >
+                        <Maximize2 className="w-5 h-5" />
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Image - Right */}
-                  <div className="bg-white/5 h-80 md:h-auto md:w-1/2 flex items-center justify-center order-1 md:order-2">
+                  <div className="bg-white/5 h-96 md:h-auto md:w-1/2 flex items-center justify-center order-1 md:order-2 rounded-3xl overflow-hidden">
                     <img
                       src={productImage}
                       alt="shxdowmouse one"
-                      className="h-full w-full object-cover p-0"
+                      className="h-full w-full object-cover p-0 scale-110"
                     />
                   </div>
                 </div>
@@ -118,18 +124,25 @@ export default function Home() {
           </div>
         </section>
 
-        <footer className="py-12 border-t border-white/10 text-center">
+        <footer className="py-12 border-t border-white/10 text-center relative overflow-hidden">
           <div className="container mx-auto px-4">
             <h2 className="font-display text-2xl font-bold mb-6">shxdowmouse</h2>
             <div className="flex justify-center gap-8 mb-8 text-sm text-muted-foreground">
+              <a href="/" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="hover:text-white transition-colors">Home</a>
               <a href="/privacy" className="hover:text-white transition-colors" data-testid="link-privacy">Privacy</a>
               <a href="/terms" className="hover:text-white transition-colors" data-testid="link-terms">Terms</a>
               <a href="/cookies" className="hover:text-white transition-colors" data-testid="link-cookies">Cookies</a>
-              <a href="#" className="hover:text-white transition-colors">Home</a>
             </div>
             <p className="text-xs text-white/20">
               © 2026 shxdowmouse inc. All rights reserved.
             </p>
+          </div>
+
+          {/* Big background text */}
+          <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
+            <h1 className="text-[200px] md:text-[300px] lg:text-[400px] font-display font-bold text-gray-900/20 leading-none whitespace-nowrap overflow-hidden" style={{ transform: "translateY(40%)" }}>
+              shxdowmouse
+            </h1>
           </div>
         </footer>
       </main>
@@ -138,42 +151,53 @@ export default function Home() {
 
       {/* Product Fullscreen Modal */}
       {isProductFullscreen && (
-        <div className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4"
+          onClick={() => setIsProductFullscreen(false)}
+        >
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="relative w-full max-h-[90vh] flex flex-col items-center justify-center"
+            layoutId="product-fullscreen"
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-5xl bg-card/80 border border-white/10 rounded-3xl p-8 md:p-12 flex flex-col items-center"
           >
-            {/* Close Button */}
+            {/* Close Button - Inside the box */}
             <button
               onClick={() => setIsProductFullscreen(false)}
               className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-10"
             >
-              <X className="w-6 h-6 text-white" />
+              <X className="w-5 h-5 text-white" />
             </button>
 
             {/* Main Content Container */}
-            <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12 max-w-7xl mx-auto">
-              {/* Product Image - Large */}
+            <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12 w-full mt-8">
+              {/* Product Image - Large with curved edges */}
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
                 className="flex-1 flex items-center justify-center"
               >
-                <img
-                  src={productImage}
-                  alt="shxdowmouse one - Fullscreen"
-                  className="w-full max-w-md object-contain"
-                />
+                <div className="w-full max-w-sm h-96 rounded-3xl overflow-hidden bg-white/5">
+                  <img
+                    src={productImage}
+                    alt="shxdowmouse one - Fullscreen"
+                    className="w-full h-full object-cover scale-110"
+                  />
+                </div>
               </motion.div>
 
               {/* Product Info - Large */}
               <motion.div
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
                 className="flex-1 space-y-6 text-center lg:text-left"
               >
                 <div>
@@ -212,7 +236,7 @@ export default function Home() {
               </motion.div>
             </div>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </div>
   );

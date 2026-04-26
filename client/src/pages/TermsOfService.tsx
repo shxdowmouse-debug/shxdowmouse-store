@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ChevronLeft, Scale, FileText, AlertCircle, Briefcase } from "lucide-react";
+import { ChevronLeft, Scale, FileText, AlertCircle, Briefcase, Package, DollarSign, Truck, RefreshCw, Lock, Copyright, Users, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
@@ -63,7 +63,7 @@ export default function TermsOfService() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="text-2xl font-display font-bold mb-4 flex items-center gap-2">
-              <FileText className="w-6 h-6 text-white/50" />
+              <Package className="w-6 h-6 text-white/50" />
               Product Information
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -80,7 +80,10 @@ export default function TermsOfService() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-2xl font-display font-bold mb-4">Pricing and Payment</h2>
+            <h2 className="text-2xl font-display font-bold mb-4 flex items-center gap-2">
+              <DollarSign className="w-6 h-6 text-white/50" />
+              Pricing and Payment
+            </h2>
             <p className="text-muted-foreground leading-relaxed">
               All prices are listed in USD and are subject to change without notice. We reserve the right to limit or refuse any order. Payment must be received before order shipment. We accept all major credit cards and payment methods as indicated on our website.
             </p>
@@ -92,7 +95,10 @@ export default function TermsOfService() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-2xl font-display font-bold mb-4">Shipping and Delivery</h2>
+            <h2 className="text-2xl font-display font-bold mb-4 flex items-center gap-2">
+              <Truck className="w-6 h-6 text-white/50" />
+              Shipping and Delivery
+            </h2>
             <p className="text-muted-foreground leading-relaxed">
               We will make every effort to ship your order within the timeframe specified. However, we are not responsible for delays caused by shipping carriers, customs, or other factors beyond our control. Risk of loss and title pass to you upon delivery to the carrier.
             </p>
@@ -104,7 +110,10 @@ export default function TermsOfService() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-2xl font-display font-bold mb-4">Returns and Refunds</h2>
+            <h2 className="text-2xl font-display font-bold mb-4 flex items-center gap-2">
+              <RefreshCw className="w-6 h-6 text-white/50" />
+              Returns and Refunds
+            </h2>
             <p className="text-muted-foreground leading-relaxed">
               Items may be returned within 30 days of purchase in original condition with all packaging and accessories. Refunds will be processed within 14 business days of receipt. Shipping costs are non-refundable unless the return is due to our error.
             </p>
@@ -131,7 +140,10 @@ export default function TermsOfService() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-2xl font-display font-bold mb-4">Disclaimer of Warranties</h2>
+            <h2 className="text-2xl font-display font-bold mb-4 flex items-center gap-2">
+              <Lock className="w-6 h-6 text-white/50" />
+              Disclaimer of Warranties
+            </h2>
             <p className="text-muted-foreground leading-relaxed">
               The materials on shxdowmouse's website are provided for informational purposes only. We make no warranties, expressed or implied, and hereby disclaim and negate all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
             </p>
@@ -143,7 +155,10 @@ export default function TermsOfService() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-2xl font-display font-bold mb-4">Intellectual Property Rights</h2>
+            <h2 className="text-2xl font-display font-bold mb-4 flex items-center gap-2">
+              <Copyright className="w-6 h-6 text-white/50" />
+              Intellectual Property Rights
+            </h2>
             <p className="text-muted-foreground leading-relaxed">
               All content on this website, including but not limited to text, graphics, logos, images, and software, is the property of shxdowmouse or its content suppliers and is protected by international copyright laws. You may not reproduce, distribute, or transmit any content without our prior written permission.
             </p>
@@ -155,7 +170,10 @@ export default function TermsOfService() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-2xl font-display font-bold mb-4">User Responsibilities</h2>
+            <h2 className="text-2xl font-display font-bold mb-4 flex items-center gap-2">
+              <Users className="w-6 h-6 text-white/50" />
+              User Responsibilities
+            </h2>
             <p className="text-muted-foreground leading-relaxed">
               You agree not to use this website for any unlawful purpose or in any way that infringes upon the rights of others or restricts their use and enjoyment of the website. Prohibited behavior includes harassing or causing distress or inconvenience to any person, transmitting obscene or offensive content, or disrupting the flow of dialogue within the website.
             </p>
@@ -167,7 +185,10 @@ export default function TermsOfService() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-2xl font-display font-bold mb-4">Modification of Terms</h2>
+            <h2 className="text-2xl font-display font-bold mb-4 flex items-center gap-2">
+              <FileText className="w-6 h-6 text-white/50" />
+              Modification of Terms
+            </h2>
             <p className="text-muted-foreground leading-relaxed">
               We may revise these terms of service for this website at any time without notice. By using this website, you are agreeing to be bound by the then current version of these terms of service.
             </p>
@@ -179,7 +200,10 @@ export default function TermsOfService() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-2xl font-display font-bold mb-4">Governing Law</h2>
+            <h2 className="text-2xl font-display font-bold mb-4 flex items-center gap-2">
+              <Scale className="w-6 h-6 text-white/50" />
+              Governing Law
+            </h2>
             <p className="text-muted-foreground leading-relaxed">
               These terms and conditions are governed by and construed in accordance with the laws of the jurisdiction in which shxdowmouse operates, and you irrevocably submit to the exclusive jurisdiction of the courts in that location.
             </p>
@@ -191,7 +215,10 @@ export default function TermsOfService() {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-2xl font-display font-bold mb-4">Contact Information</h2>
+            <h2 className="text-2xl font-display font-bold mb-4 flex items-center gap-2">
+              <CheckCircle className="w-6 h-6 text-white/50" />
+              Contact Information
+            </h2>
             <p className="text-muted-foreground leading-relaxed">
               If you have any questions about these Terms of Service, please contact us at support@shxdowmouse.com.
             </p>
