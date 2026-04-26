@@ -8,7 +8,7 @@ import { useProduct } from "@/hooks/use-products";
 import { Loader2, Maximize2, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import productImage from "../public/images/mouse.png";
+import productImage from "../../public/images/mouse.png";
 
 export default function Home() {
   const { data: product, isLoading, error } = useProduct(1);
