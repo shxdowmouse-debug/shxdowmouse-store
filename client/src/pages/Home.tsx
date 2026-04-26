@@ -8,7 +8,7 @@ import { useProduct } from "@/hooks/use-products";
 import { Loader2, Maximize2, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import productImage from "@assets/lMG_20251222_151603_1766416627210.png";
+import productImage from "../public/images/mouse.png";
 
 export default function Home() {
   const { data: product, isLoading, error } = useProduct(1);
@@ -69,7 +69,7 @@ export default function Home() {
                 transition={{ duration: 0.6 }}
                 className="w-full max-w-4xl"
               >
-                <div className="bg-card/50 border border-white/10 rounded-3xl overflow-hidden hover:border-white/20 transition-colors flex flex-col md:flex-row">
+                <div className="bg-black/20 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden hover:border-white/20 transition-colors flex flex-col md:flex-row">
                   {/* Text Content - Left */}
                   <div className="p-8 md:p-12 flex flex-col justify-center flex-1 order-2 md:order-1">
                     <h3 className="text-3xl md:text-4xl font-display font-bold mb-4">shxdowmouse one</h3>
@@ -111,11 +111,16 @@ export default function Home() {
                   </div>
 
                   {/* Image - Right */}
-                  <div className="bg-white/5 h-96 md:h-auto md:w-1/2 flex items-center justify-center order-1 md:order-2 rounded-3xl overflow-hidden">
+                  <div className="bg-black/40 relative h-96 md:h-auto md:w-1/2 flex items-center justify-center order-1 md:order-2 rounded-3xl overflow-hidden group">
+                    {/* White glow effect - more visible on hover */}
+                    <div className="absolute inset-0 bg-white/5 group-hover:bg-white/15 rounded-3xl blur-2xl transition-all duration-300" />
                     <img
                       src={productImage}
                       alt="shxdowmouse one"
-                      className="h-full w-full object-cover p-0 scale-110"
+                      className="h-full w-full object-cover p-0 scale-100 group-hover:scale-110 transition-transform duration-300 relative z-10"
+                      style={{
+                        filter: "drop-shadow(0 0 30px rgba(255, 255, 255, 0.3))",
+                      }}
                     />
                   </div>
                 </div>
@@ -139,8 +144,8 @@ export default function Home() {
           </div>
 
           {/* Big background text */}
-          <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
-            <h1 className="text-[200px] md:text-[300px] lg:text-[400px] font-display font-bold text-gray-900/20 leading-none whitespace-nowrap overflow-hidden" style={{ transform: "translateY(40%)" }}>
+          <div className="absolute bottom-0 left-0 right-0 pointer-events-none w-full flex items-center justify-center overflow-visible">
+            <h1 className="font-display font-bold text-white/15 leading-tight whitespace-nowrap flex-shrink-0" style={{ fontSize: "clamp(150px, 20vw, 500px)", transform: "translateY(35%)" }}>
               shxdowmouse
             </h1>
           </div>

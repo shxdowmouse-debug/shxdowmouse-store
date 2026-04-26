@@ -72,6 +72,9 @@ export default function TermsOfService() {
             <p className="text-muted-foreground leading-relaxed mt-4">
               We reserve the right to correct any errors, inaccuracies, or omissions and to change or update information at any time without prior notice. Product images are for illustration purposes and may differ slightly from the actual product.
             </p>
+            <p className="text-muted-foreground leading-relaxed mt-4">
+              <strong className="text-white">Attack Shark Products:</strong> Our shxdowmouse products utilize Attack Shark internals and components. We are committed to full transparency regarding the origin and composition of our products. Before any purchase is completed, we will clearly disclose all Attack Shark products and components used in your shxdowmouse. Buyers acknowledge receipt of this information and accept full responsibility for their purchase decision. By purchasing from us, you acknowledge that you have been made aware of all Attack Shark products contained within, and we are not held responsible for any lack of knowledge on the buyer's part regarding these components.
+            </p>
           </motion.section>
 
           <motion.section
@@ -220,7 +223,7 @@ export default function TermsOfService() {
               Contact Information
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              If you have any questions about these Terms of Service, please contact us at support@shxdowmouse.com.
+              If you have any questions about these Terms of Service, please contact us at shxdowmouse@gmail.com.
             </p>
           </motion.section>
         </div>
