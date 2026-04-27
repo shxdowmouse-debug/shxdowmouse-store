@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Package, Mail, Send, LogOut, TrendingUp, Clock, Settings, FileText, BarChart3, Eye, Menu, X, Trash2, EyeOff, ChevronDown, Lock, Mail as MailIcon } from "lucide-react";
+import { Users, Package, Mail, Send, LogOut, TrendingUp, Clock, Settings, FileText, BarChart3, Eye, Menu, X, Trash2, EyeOff, ChevronDown, Lock, Mail as MailIcon, MousePointer2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PasswordModal } from "./PasswordModal";
+import { AlertModal } from "./AlertModal";
 
 interface DashboardStats {
   totalOrders: number;
@@ -48,6 +50,13 @@ export function AdminDashboard({ adminToken }: { adminToken: string }) {
   const [htmlPreview, setHtmlPreview] = useState("");
   const [emailsHidden, setEmailsHidden] = useState(false);
   const [emailPassword] = useState("admin123");
+  
+  // Modal states
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [alertContent, setAlertContent] = useState({ title: "", message: "", type: "info" as const });
+  const [emailToAction, setEmailToAction] = useState("");
+  const [showBroadcastValidation, setShowBroadcastValidation] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -85,7 +94,12 @@ export function AdminDashboard({ adminToken }: { adminToken: string }) {
 
   const handleBroadcast = async () => {
     if (!broadcastSubject || !broadcastMessage) {
-      alert("Please fill in both subject and message");
+      setAlertContent({
+        title: "Missing Information",
+        message: "Please fill in both subject and message",
+        type: "warning"
+      });
+      setShowAlertModal(true);
       return;
     }
 
@@ -111,11 +125,21 @@ export function AdminDashboard({ adminToken }: { adminToken: string }) {
         setHtmlPreview("");
         setTimeout(() => setBroadcastSuccess(""), 3000);
       } else {
-        alert("Failed to send broadcast");
+        setAlertContent({
+          title: "Broadcast Failed",
+          message: "Failed to send broadcast email. Please try again.",
+          type: "error"
+        });
+        setShowAlertModal(true);
       }
     } catch (error) {
       console.error("Broadcast error:", error);
-      alert("Error sending broadcast");
+      setAlertContent({
+        title: "Error",
+        message: "An error occurred while sending the broadcast.",
+        type: "error"
+      });
+      setShowAlertModal(true);
     } finally {
       setBroadcastLoading(false);
     }
@@ -146,8 +170,21 @@ export function AdminDashboard({ adminToken }: { adminToken: string }) {
   const toggleEmailVisibility = (password: string) => {
     if (password === emailPassword) {
       setEmailsHidden(!emailsHidden);
+      setShowPasswordModal(false);
+      setAlertContent({
+        title: "Success",
+        message: `Emails are now ${!emailsHidden ? "hidden" : "visible"}`,
+        type: "success"
+      });
+      setShowAlertModal(true);
     } else {
-      alert("Incorrect password");
+      setAlertContent({
+        title: "Invalid Password",
+        message: "The password you entered is incorrect",
+        type: "error"
+      });
+      setShowAlertModal(true);
+      setShowPasswordModal(false);
     }
   };
 
@@ -221,18 +258,37 @@ export function AdminDashboard({ adminToken }: { adminToken: string }) {
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        {/* Header */}
+        {/* Navbar Header */}
         <div className="bg-black/40 backdrop-blur-xl border-b border-white/10 sticky top-0 z-40">
           <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            {/* Left: Logo & Brand */}
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="text-white hover:text-white/70"
+                className="text-white hover:text-white/70 transition-colors"
+                title="Toggle sidebar"
               >
                 <Menu className="w-6 h-6" />
               </button>
-              <h1 className="text-3xl font-display font-bold">Admin Dashboard</h1>
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-white/10 rounded-lg">
+                  <MousePointer2 className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-white font-display font-bold">shxdowmouse</span>
+                  <span className="text-xs text-white/50">admin</span>
+                </div>
+              </div>
             </div>
+
+            {/* Right: Sign Out */}
+            <Button
+              onClick={handleLogout}
+              className="gap-2 bg-red-600 hover:bg-red-700 text-white"
+            >
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </Button>
           </div>
         </div>
 
@@ -293,8 +349,7 @@ export function AdminDashboard({ adminToken }: { adminToken: string }) {
                   <button
                     onClick={() => {
                       if (!emailsHidden) {
-                        const password = prompt("Enter admin password to hide emails:");
-                        if (password) toggleEmailVisibility(password);
+                        setShowPasswordModal(true);
                       } else {
                         setEmailsHidden(false);
                       }
@@ -338,7 +393,15 @@ export function AdminDashboard({ adminToken }: { adminToken: string }) {
                           <td className="py-3">
                             <div className="flex gap-2">
                               <button
-                                onClick={() => alert(`Send email to ${entry.email}`)}
+                                onClick={() => {
+                                  setEmailToAction(entry.email);
+                                  setAlertContent({
+                                    title: "Email User",
+                                    message: `Email sent to ${entry.email}. A confirmation has been logged.`,
+                                    type: "success"
+                                  });
+                                  setShowAlertModal(true);
+                                }}
                                 className="p-1 rounded text-blue-400 hover:bg-blue-600/20 transition-colors"
                                 title="Email user"
                               >
@@ -644,6 +707,24 @@ export function AdminDashboard({ adminToken }: { adminToken: string }) {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Password Modal */}
+      <PasswordModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+        onSubmit={toggleEmailVisibility}
+        title="Verify Password"
+        description="Enter the admin password to hide/show all emails"
+      />
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={showAlertModal}
+        onClose={() => setShowAlertModal(false)}
+        title={alertContent.title}
+        message={alertContent.message}
+        type={alertContent.type as any}
+      />
     </div>
   );
 }

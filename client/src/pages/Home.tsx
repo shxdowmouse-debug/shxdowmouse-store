@@ -3,9 +3,10 @@ import { Navbar } from "@/components/Navbar";
 import { ProductHero } from "@/components/ProductHero";
 import { Features } from "@/components/Features";
 import { OrderModal } from "@/components/OrderModal";
+import { ProductFullscreenModal } from "@/components/ProductFullscreenModal";
 import { ShootingStars } from "@/components/ShootingStars";
 import { useProduct } from "@/hooks/use-products";
-import { Loader2, Maximize2, X } from "lucide-react";
+import { Loader2, Maximize2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import productImage from "../../public/images/mouse.png";
@@ -145,7 +146,7 @@ export default function Home() {
 
           {/* Big background text */}
           <div className="absolute bottom-0 left-0 right-0 pointer-events-none w-full flex items-center justify-center overflow-visible">
-            <h1 className="font-display font-bold text-white/15 leading-tight whitespace-nowrap flex-shrink-0" style={{ fontSize: "clamp(150px, 20vw, 500px)", transform: "translateY(35%)" }}>
+            <h1 className="font-display font-bold leading-tight whitespace-nowrap flex-shrink-0" style={{ fontSize: "clamp(150px, 20vw, 500px)", transform: "translateY(35%)", color: "#171717" }}>
               shxdowmouse
             </h1>
           </div>
@@ -154,95 +155,14 @@ export default function Home() {
 
       <OrderModal isOpen={isOrderOpen} onClose={() => setIsOrderOpen(false)} product={product} />
 
-      {/* Product Fullscreen Modal */}
-      {isProductFullscreen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4"
-          onClick={() => setIsProductFullscreen(false)}
-        >
-          <motion.div
-            layoutId="product-fullscreen"
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-5xl bg-card/80 border border-white/10 rounded-3xl p-8 md:p-12 flex flex-col items-center"
-          >
-            {/* Close Button - Inside the box */}
-            <button
-              onClick={() => setIsProductFullscreen(false)}
-              className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-10"
-            >
-              <X className="w-5 h-5 text-white" />
-            </button>
-
-            {/* Main Content Container */}
-            <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12 w-full mt-8">
-              {/* Product Image - Large with curved edges */}
-              <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="flex-1 flex items-center justify-center"
-              >
-                <div className="w-full max-w-sm h-96 rounded-3xl overflow-hidden bg-white/5">
-                  <img
-                    src={productImage}
-                    alt="shxdowmouse one - Fullscreen"
-                    className="w-full h-full object-cover scale-110"
-                  />
-                </div>
-              </motion.div>
-
-              {/* Product Info - Large */}
-              <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="flex-1 space-y-6 text-center lg:text-left"
-              >
-                <div>
-                  <h2 className="text-4xl md:text-5xl font-display font-bold leading-tight mb-4">
-                    shxdowmouse one
-                  </h2>
-                  <p className="text-lg text-muted-foreground leading-relaxed">
-                    Ultra‑lightweight fingertip mouse crafted for precision, seamlessly powered by Attack Shark X8 SE internals.
-                  </p>
-                </div>
-
-                <ul className="space-y-3 text-muted-foreground">
-                  <li className="flex items-center gap-3">
-                    <span className="text-white/40">•</span>
-                    <span>25g Ultra Lightweight design</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-white/40">•</span>
-                    <span>Tri-Mode Connectivity</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <span className="text-white/40">•</span>
-                    <span>25,000 DPI Optical Sensor</span>
-                  </li>
-                </ul>
-
-                <Button
-                  onClick={() => {
-                    setIsProductFullscreen(false);
-                    setIsOrderOpen(true);
-                  }}
-                  className="h-12 px-8 rounded-2xl text-base font-semibold bg-white text-black hover:bg-white/90 transition-all"
-                >
-                  Stay Updated
-                </Button>
-              </motion.div>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
+      <ProductFullscreenModal
+        isOpen={isProductFullscreen}
+        onClose={() => setIsProductFullscreen(false)}
+        productImage={productImage}
+        productName="shxdowmouse one"
+        productDescription="Ultra‑lightweight fingertip mouse crafted for precision, seamlessly powered by Attack Shark X8 SE internals."
+        images={[productImage]}
+      />
     </div>
   );
 }
