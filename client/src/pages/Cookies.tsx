@@ -3,6 +3,7 @@ import { ChevronLeft, Cookie, Settings2, ToggleLeft, ToggleRight } from "lucide-
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useToast } from "@/components/Toast";
 
 export default function Cookies() {
   const [preferences, setPreferences] = useState({
@@ -11,6 +12,7 @@ export default function Cookies() {
     marketing: false,
     performance: false,
   });
+  const { addToast } = useToast();
 
   const handleToggle = (key: keyof typeof preferences) => {
     if (key !== "essential") {
@@ -23,39 +25,31 @@ export default function Cookies() {
 
   const handleSavePreferences = () => {
     localStorage.setItem("cookiePreferences", JSON.stringify(preferences));
-    alert("Cookie preferences saved!");
+    addToast("Cookie preferences saved!", "success", 3000);
   };
 
   const handleAcceptAll = () => {
-    setPreferences({
+    const allAccepted = {
       essential: true,
       analytics: true,
       marketing: true,
       performance: true,
-    });
-    localStorage.setItem("cookiePreferences", JSON.stringify({
-      essential: true,
-      analytics: true,
-      marketing: true,
-      performance: true,
-    }));
-    alert("All cookies accepted!");
+    };
+    setPreferences(allAccepted);
+    localStorage.setItem("cookiePreferences", JSON.stringify(allAccepted));
+    addToast("All cookies accepted!", "success", 3000);
   };
 
   const handleRejectAll = () => {
-    setPreferences({
+    const rejected = {
       essential: true,
       analytics: false,
       marketing: false,
       performance: false,
-    });
-    localStorage.setItem("cookiePreferences", JSON.stringify({
-      essential: true,
-      analytics: false,
-      marketing: false,
-      performance: false,
-    }));
-    alert("Cookie preferences updated!");
+    };
+    setPreferences(rejected);
+    localStorage.setItem("cookiePreferences", JSON.stringify(rejected));
+    addToast("Cookie preferences updated!", "info", 3000);
   };
 
   return (

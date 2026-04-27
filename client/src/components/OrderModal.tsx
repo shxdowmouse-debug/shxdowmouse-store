@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Mail, Check } from "lucide-react";
+import { useToast } from "./Toast";
 import type { Product } from "@shared/schema";
 
 interface OrderModalProps {
@@ -20,6 +21,7 @@ export function OrderModal({ isOpen, onClose, product }: OrderModalProps) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const { addToast } = useToast();
 
   const handleNotifySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,17 +38,18 @@ export function OrderModal({ isOpen, onClose, product }: OrderModalProps) {
 
       if (res.ok) {
         setSubmitted(true);
+        addToast("Successfully subscribed to updates!", "success", 3000);
         setTimeout(() => {
           setEmail("");
           setSubmitted(false);
           onClose();
         }, 2000);
       } else {
-        alert("Failed to subscribe. Please try again.");
+        addToast("Failed to subscribe. Please try again.", "error", 4000);
       }
     } catch (err) {
       console.error("Notify error:", err);
-      alert("Something went wrong.");
+      addToast("Something went wrong. Please try again.", "error", 4000);
     } finally {
       setLoading(false);
     }

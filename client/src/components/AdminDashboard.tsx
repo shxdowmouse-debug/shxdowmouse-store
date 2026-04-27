@@ -4,6 +4,7 @@ import { Users, Package, Mail, Send, LogOut, TrendingUp, Clock, Settings, FileTe
 import { Button } from "@/components/ui/button";
 import { PasswordModal } from "./PasswordModal";
 import { AlertModal } from "./AlertModal";
+import { AdminNavbar } from "./AdminNavbar";
 
 interface DashboardStats {
   totalOrders: number;
@@ -258,39 +259,12 @@ export function AdminDashboard({ adminToken }: { adminToken: string }) {
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        {/* Navbar Header */}
-        <div className="bg-black/40 backdrop-blur-xl border-b border-white/10 sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            {/* Left: Logo & Brand */}
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="text-white hover:text-white/70 transition-colors"
-                title="Toggle sidebar"
-              >
-                <Menu className="w-6 h-6" />
-              </button>
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-white/10 rounded-lg">
-                  <MousePointer2 className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-white font-display font-bold">shxdowmouse</span>
-                  <span className="text-xs text-white/50">admin</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right: Sign Out */}
-            <Button
-              onClick={handleLogout}
-              className="gap-2 bg-red-600 hover:bg-red-700 text-white"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </Button>
-          </div>
-        </div>
+        {/* Enhanced Navbar */}
+        <AdminNavbar
+          sidebarOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          onLogout={handleLogout}
+        />
 
         {/* Content */}
         <div className="p-6 max-w-7xl mx-auto">

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, Zap, Gauge, Radio, Weight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Zap, Gauge, Radio, Weight, Droplet, Lightbulb } from "lucide-react";
 import { Button } from "./ui/button";
 
 interface ProductFullscreenModalProps {
@@ -16,22 +16,32 @@ const PRODUCT_SPECS = {
   sensor: {
     icon: Gauge,
     label: "Sensor",
-    specs: ["PAW3311 Optical", "Max 25000 DPI", "400 IPS Tracking", "40G Acceleration"]
+    specs: ["PAW3311 Optical", "Max 25,000 DPI", "400 IPS Tracking", "40G Acceleration"]
   },
   connectivity: {
     icon: Radio,
     label: "Connectivity",
-    specs: ["Wired", "2.4GHz Wireless", "Bluetooth", "1000Hz Polling"]
+    specs: ["Wired & 2.4GHz", "Bluetooth Support", "1000Hz Polling Rate", "Multiple connections"]
   },
   design: {
     icon: Weight,
-    label: "Design",
-    specs: ["25g Ultralight", "Symmetrical Right-handed", "PTFE Skates", "Ergonomic Shape"]
+    label: "Build",
+    specs: ["25g Ultralight", "Ergonomic Shape", "PTFE Skates", "symmetrical Grip"]
   },
   switches: {
     icon: Zap,
     label: "Switches",
-    specs: ["HUANO Blue Shell Pink Dot", "80M Clicks (Main)", "F-Switch Scroll - 50K", "500mAh Battery"]
+    specs: ["80M Click Buttons", "50K Scroll Wheel", "HUANO Switches", "Durability tested"]
+  },
+  battery: {
+    icon: Droplet,
+    label: "Power",
+    specs: ["500mAh Battery", "Extended Runtime", "Fast Charging", "Reliable wireless"]
+  },
+  colors: {
+    icon: Lightbulb,
+    label: "Options",
+    specs: ["Black", "White", "Berry Red", "No RGB needed"]
   }
 };
 
@@ -44,6 +54,9 @@ export function ProductFullscreenModal({
   images = [productImage]
 }: ProductFullscreenModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const galleryRef = useRef<HTMLDivElement>(null);
   
   const goToNextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -53,6 +66,44 @@ export function ProductFullscreenModal({
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
+  // Swipe handling
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    setTouchEnd(e.changedTouches[0].clientX);
+    handleSwipe();
+  };
+
+  const handleSwipe = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      goToNextImage();
+    }
+    if (isRightSwipe) {
+      goToPrevImage();
+    }
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") goToPrevImage();
+      if (e.key === "ArrowRight") goToNextImage();
+      if (e.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -60,142 +111,172 @@ export function ProductFullscreenModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/98 backdrop-blur-xl flex items-center justify-center z-50 p-2 md:p-4"
           onClick={onClose}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            initial={{ opacity: 0, scale: 0.85, y: 40 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            exit={{ opacity: 0, scale: 0.85, y: 40 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-6xl bg-black/40 border border-white/10 rounded-3xl p-8 md:p-12 max-h-[90vh] overflow-y-auto"
+            className="relative w-full h-[95vh] max-w-7xl bg-gradient-to-b from-black/50 via-black/40 to-black/50 border border-white/10 rounded-3xl p-4 md:p-8 lg:p-12 overflow-y-auto scrollbar-hide"
           >
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-10"
+              className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-20"
+              aria-label="Close"
             >
-              <X className="w-5 h-5 text-white" />
+              <X className="w-6 h-6 text-white" />
             </button>
 
-            {/* Main Content */}
-            <div className="grid lg:grid-cols-2 gap-12 mt-8">
-              {/* Image Gallery */}
+            {/* Main Content - 3 Column Layout */}
+            <div className="grid md:grid-cols-3 gap-6 md:gap-8 lg:gap-10 h-full">
+              {/* Left: Image Gallery - Larger */}
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                className="flex flex-col items-center justify-center gap-4"
+                className="md:col-span-2 flex flex-col items-center justify-center gap-4"
               >
-                {/* Main Image */}
-                <div className="relative w-full aspect-square bg-black/60 rounded-2xl overflow-hidden flex items-center justify-center border border-white/10">
+                {/* Main Image - Full Height */}
+                <div
+                  ref={galleryRef}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
+                  className="relative w-full flex-1 bg-gradient-to-b from-black/40 to-black/20 rounded-2xl overflow-hidden flex items-center justify-center border border-white/10 cursor-grab active:cursor-grabbing group"
+                >
                   <AnimatePresence mode="wait">
                     <motion.img
                       key={currentImageIndex}
                       src={images[currentImageIndex]}
                       alt={`${productName} - View ${currentImageIndex + 1}`}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="w-full h-full object-cover"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.4 }}
+                      className="w-full h-full object-contain"
+                      draggable={false}
                     />
                   </AnimatePresence>
                   
-                  {/* Image Counter */}
-                  <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs text-white/80">
-                    {currentImageIndex + 1} / {images.length}
+                  {/* Image Counter Badge */}
+                  <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-md px-4 py-2 rounded-full text-sm text-white/90 font-medium border border-white/10">
+                    {currentImageIndex + 1} <span className="text-white/50">/ {images.length}</span>
                   </div>
+
+                  {/* Swipe Hint */}
+                  {images.length > 1 && (
+                    <div className="absolute inset-0 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="text-white/30 text-xs">← Swipe</div>
+                      <div className="text-white/30 text-xs">Swipe →</div>
+                    </div>
+                  )}
                 </div>
 
-                {/* Navigation Buttons */}
+                {/* Navigation Controls */}
                 {images.length > 1 && (
-                  <div className="flex gap-4 w-full">
-                    <Button
-                      onClick={goToPrevImage}
-                      size="icon"
-                      className="flex-1 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </Button>
-                    <Button
-                      onClick={goToNextImage}
-                      size="icon"
-                      className="flex-1 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </Button>
-                  </div>
-                )}
+                  <div className="w-full space-y-4">
+                    <div className="flex gap-3">
+                      <Button
+                        onClick={goToPrevImage}
+                        size="lg"
+                        className="flex-1 h-12 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold transition-all"
+                      >
+                        <ChevronLeft className="w-5 h-5 mr-2" />
+                        Previous
+                      </Button>
+                      <Button
+                        onClick={goToNextImage}
+                        size="lg"
+                        className="flex-1 h-12 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold transition-all"
+                      >
+                        Next
+                        <ChevronRight className="w-5 h-5 ml-2" />
+                      </Button>
+                    </div>
 
-                {/* Thumbnail Indicators */}
-                {images.length > 1 && (
-                  <div className="flex gap-2 w-full">
-                    {images.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentImageIndex(index)}
-                        className={`h-2 flex-1 rounded-full transition-all ${
-                          index === currentImageIndex
-                            ? "bg-white"
-                            : "bg-white/20 hover:bg-white/40"
-                        }`}
-                      />
-                    ))}
+                    {/* Thumbnail Indicators */}
+                    <div className="flex gap-2 w-full">
+                      {images.map((_, index) => (
+                        <motion.button
+                          key={index}
+                          onClick={() => setCurrentImageIndex(index)}
+                          whileHover={{ scale: 1.2 }}
+                          whileTap={{ scale: 0.95 }}
+                          className={`h-2.5 rounded-full transition-all ${
+                            index === currentImageIndex
+                              ? "bg-white flex-grow"
+                              : "bg-white/20 hover:bg-white/40 flex-1"
+                          }`}
+                          aria-label={`Go to image ${index + 1}`}
+                        />
+                      ))}
+                    </div>
                   </div>
                 )}
               </motion.div>
 
-              {/* Product Info & Specs */}
+              {/* Right: Product Info & Specs */}
               <motion.div
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="flex flex-col gap-8"
+                className="flex flex-col gap-6"
               >
                 {/* Product Title & Description */}
-                <div>
-                  <h1 className="text-4xl font-display font-bold mb-4 text-white capitalize">
+                <div className="space-y-3">
+                  <h1 className="text-3xl md:text-4xl font-display font-bold text-white capitalize leading-tight">
                     {productName}
                   </h1>
-                  <p className="text-white/70 leading-relaxed">
+                  <p className="text-white/70 leading-relaxed text-sm md:text-base">
                     {productDescription}
                   </p>
                 </div>
 
-                {/* Quick Features Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                  {Object.entries(PRODUCT_SPECS).map(([key, spec]) => {
-                    const Icon = spec.icon;
-                    return (
-                      <motion.div
-                        key={key}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: 0.3 + Object.keys(PRODUCT_SPECS).indexOf(key) * 0.05 }}
-                        className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-colors"
-                      >
-                        <div className="flex items-center gap-2 mb-2">
-                          <Icon className="w-4 h-4 text-white/60" />
-                          <h3 className="font-semibold text-sm text-white">{spec.label}</h3>
-                        </div>
-                        <ul className="space-y-1">
-                          {spec.specs.map((item, idx) => (
-                            <li key={idx} className="text-xs text-white/50">
-                              • {item}
-                            </li>
-                          ))}
-                        </ul>
-                      </motion.div>
-                    );
-                  })}
+                {/* Specifications Grid */}
+                <div className="space-y-3">
+                  <h2 className="text-lg font-semibold text-white/90">Key Specs</h2>
+                  <div className="grid grid-cols-2 gap-3">
+                    {Object.entries(PRODUCT_SPECS).map(([key, spec]) => {
+                      const Icon = spec.icon;
+                      return (
+                        <motion.div
+                          key={key}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4, delay: 0.3 + Object.keys(PRODUCT_SPECS).indexOf(key) * 0.05 }}
+                          className="bg-gradient-to-br from-white/8 to-white/3 border border-white/15 rounded-xl p-3 hover:from-white/12 hover:to-white/6 transition-all group cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <Icon className="w-4 h-4 text-white/70 group-hover:text-white/90 transition-colors" />
+                            <h3 className="font-semibold text-xs md:text-sm text-white">{spec.label}</h3>
+                          </div>
+                          <ul className="space-y-0.5">
+                            {spec.specs.map((item, idx) => (
+                              <li key={idx} className="text-xs text-white/50 group-hover:text-white/70 transition-colors">
+                                ◆ {item}
+                              </li>
+                            ))}
+                          </ul>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* CTA Button */}
-                <Button className="w-full h-12 rounded-2xl bg-white text-black font-semibold hover:bg-white/90 transition-colors">
-                  Stay Updated
-                </Button>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                  className="mt-auto pt-4"
+                >
+                  <Button className="w-full h-12 rounded-2xl bg-gradient-to-r from-white to-white/90 text-black font-bold hover:from-white/95 hover:to-white/85 transition-all shadow-lg hover:shadow-xl">
+                    Stay Updated
+                  </Button>
+                </motion.div>
               </motion.div>
             </div>
           </motion.div>
