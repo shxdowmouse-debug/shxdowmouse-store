@@ -127,7 +127,7 @@ export function ProductHero({ product, onBuyClick }: ProductHeroProps) {
                 className="flex-1 flex items-center justify-center"
               >
                 <img
-                  src="/images/mouse.png"
+                  src="/images/mainmouse.png"
                   alt="SHXDOWMOUSE Product - Fullscreen"
                   className="w-full max-w-md object-contain"
                 />

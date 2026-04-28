@@ -156,7 +156,7 @@ export function ProductFullscreenModal({
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.4 }}
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-cover"
                       draggable={false}
                     />
                   </AnimatePresence>
