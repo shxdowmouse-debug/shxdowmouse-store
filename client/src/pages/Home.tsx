@@ -9,7 +9,7 @@ import { useProduct } from "@/hooks/use-products";
 import { Loader2, Maximize2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import productImage from "../../public/images/shxdowmouseone.png";
+import productImage from "../../public/images/shxdowmouse-one.png";
 
 export default function Home() {
   const { data: product, isLoading, error } = useProduct(1);
@@ -163,8 +163,11 @@ export default function Home() {
         productDescription="Ultra‑lightweight fingertip mouse crafted for precision, seamlessly powered by Attack Shark X8 SE internals."
         images={[
           "/images/mainmouse.png",
-          "/images/shxdowmouseone.png",
-          "/images/mouse.png",
+          "/images/shxdowmouse-one.png",
+          "/images/shxdowmouse-above.png",
+          "/images/shxdowmouse-left.png",
+          "/images/shxdowmouse-rear.png",
+          "/images/shxdowmouse-side.png",
         ]}
       />
     </div>
