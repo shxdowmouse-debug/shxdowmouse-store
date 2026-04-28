@@ -4,8 +4,8 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "dev": "NODE_ENV=development node --loader tsx/esm server/index.ts",
-    "build": "node --loader tsx/esm script/build.ts",
+    "dev": "NODE_ENV=development node --import tsx server/index.ts",
+    "build": "node --import tsx script/build.ts",
     "start": "NODE_ENV=production drizzle-kit push && node dist/index.cjs",
     "check": "tsc",
     "db:push": "drizzle-kit push"
