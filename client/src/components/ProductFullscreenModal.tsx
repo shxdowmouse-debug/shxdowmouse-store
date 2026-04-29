@@ -21,7 +21,7 @@ const PRODUCT_SPECS = {
   connectivity: {
     icon: Radio,
     label: "Connectivity",
-    specs: ["Wired & 2.4GHz", "Bluetooth Support", "1000Hz Polling Rate", "Multiple connections"]
+    specs: ["Wired & 2.4GHz", "Bluetooth Support", "1000Hz Polling Rate", "Multiple options"]
   },
   design: {
     icon: Weight,
@@ -41,7 +41,7 @@ const PRODUCT_SPECS = {
   colors: {
     icon: Lightbulb,
     label: "Options",
-    specs: ["Black", "White", "Berry Red", "No RGB needed"]
+    specs: ["Black", "White Scroll", "Blue Switches", "No RGB needed"]
   }
 };
 
