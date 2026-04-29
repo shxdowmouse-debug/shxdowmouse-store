@@ -130,8 +130,15 @@ export default function Home() {
           </div>
         </section>
 
-        <footer className="py-12 border-t border-white/10 text-center relative overflow-hidden z-20">
-          <div className="container mx-auto px-4">
+        <footer className="py-12 border-t border-white/10 text-center relative overflow-hidden">
+          {/* Big background text - moved to back layer */}
+          <div className="absolute bottom-0 left-0 right-0 pointer-events-none w-full flex items-center justify-center overflow-visible" style={{ zIndex: 0 }}>
+            <h1 className="font-display font-bold leading-tight whitespace-nowrap flex-shrink-0" style={{ fontSize: "clamp(150px, 20vw, 500px)", transform: "translateY(35%)", color: "#171717" }}>
+              shxdowmouse
+            </h1>
+          </div>
+          
+          <div className="container mx-auto px-4 relative z-10">
             <h2 className="font-display text-2xl font-bold mb-6">shxdowmouse</h2>
             <div className="flex justify-center gap-8 mb-8 text-sm text-muted-foreground">
               <a href="/" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="hover:text-white transition-colors">Home</a>
@@ -142,13 +149,6 @@ export default function Home() {
             <p className="text-xs text-white/20">
               © 2026 shxdowmouse inc. All rights reserved.
             </p>
-          </div>
-
-          {/* Big background text */}
-          <div className="absolute bottom-0 left-0 right-0 pointer-events-none w-full flex items-center justify-center overflow-visible z-0">
-            <h1 className="font-display font-bold leading-tight whitespace-nowrap flex-shrink-0" style={{ fontSize: "clamp(150px, 20vw, 500px)", transform: "translateY(35%)", color: "#171717" }}>
-              shxdowmouse
-            </h1>
           </div>
         </footer>
       </main>
