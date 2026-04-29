@@ -32,7 +32,7 @@ export function ProductHero({ product, onBuyClick }: ProductHeroProps) {
             <div className="relative w-full max-w-md mx-auto md:mx-0 aspect-square">
               <div className="absolute inset-0 rounded-[40px] bg-gradient-to-br from-white/10 to-white/5 blur-2xl opacity-50" />
               <img
-                src="/images/mouse.png"
+                src="/images/mainmouse.png"
                 alt="SHXDOWMOUSE Product"
                 className="relative w-full h-full object-contain drop-shadow-2xl rounded-[40px]"
               />
