@@ -162,7 +162,6 @@ export default function Home() {
         productName="shxdowmouse one"
         productDescription="Ultra‑lightweight fingertip mouse crafted for precision, seamlessly powered by Attack Shark X8 SE internals."
         images={[
-          "/images/mainmouse.png",
           "/images/shxdowmouse-one.png",
           "/images/shxdowmouse-above.png",
           "/images/shxdowmouse-left.png",

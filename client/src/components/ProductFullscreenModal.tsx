@@ -145,7 +145,7 @@ export function ProductFullscreenModal({
                   ref={galleryRef}
                   onTouchStart={handleTouchStart}
                   onTouchEnd={handleTouchEnd}
-                  className="relative w-full flex-1 bg-gradient-to-b from-black/40 to-black/20 rounded-2xl overflow-hidden flex items-center justify-center border border-white/10 cursor-grab active:cursor-grabbing group"
+                  className="relative w-full h-96 md:h-[600px] lg:h-[700px] bg-gradient-to-b from-black/40 to-black/20 rounded-2xl overflow-hidden flex items-center justify-center border border-white/10 cursor-grab active:cursor-grabbing group"
                 >
                   <AnimatePresence mode="wait">
                     <motion.img
