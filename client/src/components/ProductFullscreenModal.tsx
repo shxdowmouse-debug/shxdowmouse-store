@@ -142,37 +142,40 @@ export function ProductFullscreenModal({
             >
               <X className="w-6 h-6 text-white" />
             </button>
+{/* Main Content - 3 Column Layout */}
+<div className="grid md:grid-cols-3 gap-6 md:gap-8 lg:gap-10 h-full">
 
-            {/* Main Content - 3 Column Layout */}
-            <div className="grid md:grid-cols-3 gap-6 md:gap-8 lg:gap-10 h-full">
-              {/* Left: Image Gallery - Larger */}
-              <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="md:col-span-2 flex flex-col items-center justify-center gap-4"
-              >
-                {/* Main Image - Full Height */}
-                <div
-                  ref={galleryRef}
-                  onTouchStart={handleTouchStart}
-                  onTouchEnd={handleTouchEnd}
-                  className="relative w-full h-96 md:h-[600px] lg:h-[700px] bg-gradient-to-b from-black/40 to-black/20 rounded-2xl overflow-hidden flex items-center justify-center border border-white/10 cursor-grab active:cursor-grabbing group"
-                >
-                  <AnimatePresence mode="wait">
-                    <motion.img
-                      key={currentImageIndex}
-                      src={images[currentImageIndex]}
-                      alt={`${productName} - View ${currentImageIndex + 1}`}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.4 }}
-                      className="w-full h-full object-contain"
-                      draggable={false}
-                    />
-                  </AnimatePresence>
-                  
+  {/* Left: Image Gallery */}
+  <motion.div
+    initial={{ opacity: 0, x: -50 }}
+    animate={{ opacity: 1, x: 0 }}
+    transition={{ duration: 0.5, delay: 0.1 }}
+    className="md:col-span-2 flex flex-col items-center justify-center gap-4"
+  >
+    {/* Main Image */}
+    <div
+      ref={galleryRef}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="relative w-full h-64 md:h-[380px] lg:h-[420px] bg-gradient-to-b from-black/40 to-black/20 rounded-2xl overflow-hidden flex items-center justify-center border border-white/10 cursor-grab active:cursor-grabbing group"
+    >
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={currentImageIndex}
+          src={images[currentImageIndex]}
+          alt={`${productName} - View ${currentImageIndex + 1}`}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.4 }}
+          className="w-full h-full object-contain"
+          draggable={false}
+        />
+      </AnimatePresence>
+    </div>
+  </motion.div>
+
+</div>
                   {/* Image Counter Badge */}
                   <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-md px-4 py-2 rounded-full text-sm text-white/90 font-medium border border-white/10">
                     {currentImageIndex + 1} <span className="text-white/50">/ {images.length}</span>
