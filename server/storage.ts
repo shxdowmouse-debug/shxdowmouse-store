@@ -1,4 +1,4 @@
-import { products, orders, waitlist, type Product, type InsertProduct, type Order, type InsertOrder, type Waitlist, type InsertWaitlist } from "@shared/schema";
+import { products, orders, waitlist, adminUsers, type Product, type InsertProduct, type Order, type InsertOrder, type Waitlist, type InsertWaitlist, type AdminUser, type InsertAdminUser } from "../shared/schema";
 import { db } from "./db";
 import { eq, desc, count } from "drizzle-orm";
 
@@ -10,12 +10,24 @@ export interface IStorage {
   getOrders(): Promise<Order[]>;
   getWaitlist(): Promise<Waitlist[]>;
   addToWaitlist(email: string, name?: string): Promise<Waitlist>;
+  removeFromWaitlist(email: string): Promise<boolean>;
   getStats(): Promise<{
     totalOrders: number;
     totalWaitlistSignups: number;
     pendingOrders: number;
     recentOrders: Order[];
   }>;
+  // Admin users
+  getAdminUser(username: string): Promise<AdminUser | undefined>;
+  createAdminUser(data: {
+    username: string;
+    passwordHash: string;
+    twoFaSecret: string | null;
+    twoFaEnabled: boolean;
+  }): Promise<AdminUser>;
+  updateAdminUser2FA(username: string, secret: string | null, enabled: boolean): Promise<AdminUser>;
+  getAllAdminUsers(): Promise<AdminUser[]>;
+  deleteAllAdminSessions(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -73,6 +85,43 @@ export class DatabaseStorage implements IStorage {
   async removeFromWaitlist(email: string): Promise<boolean> {
     const result = await db.delete(waitlist).where(eq(waitlist.email, email));
     return true;
+  }
+
+  async getAdminUser(username: string): Promise<AdminUser | undefined> {
+    const [user] = await db.select().from(adminUsers).where(eq(adminUsers.username, username));
+    return user;
+  }
+
+  async createAdminUser(data: {
+    username: string;
+    passwordHash: string;
+    twoFaSecret: string | null;
+    twoFaEnabled: boolean;
+  }): Promise<AdminUser> {
+    const [user] = await db.insert(adminUsers).values(data).returning();
+    return user;
+  }
+
+  async updateAdminUser2FA(username: string, secret: string | null, enabled: boolean): Promise<AdminUser> {
+    const [user] = await db
+      .update(adminUsers)
+      .set({
+        twoFaSecret: secret,
+        twoFaEnabled: enabled,
+        updatedAt: new Date(),
+      })
+      .where(eq(adminUsers.username, username))
+      .returning();
+    return user;
+  }
+
+  async getAllAdminUsers(): Promise<AdminUser[]> {
+    return await db.select().from(adminUsers);
+  }
+
+  async deleteAllAdminSessions(): Promise<void> {
+    // Clear 2FA secrets to force re-authentication
+    await db.update(adminUsers).set({ twoFaEnabled: false, twoFaSecret: null, updatedAt: new Date() });
   }
 }
 

@@ -1,11 +1,11 @@
-// server/routes.ts
 import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
-import { api } from "@shared/routes";
+import { api } from "../shared/routes";
 import { z } from "zod";
 import { sendEmail } from "./email";
-import { verifyAdminAuth } from "./auth";
+import { verifyAdminAuth, generateTwoFASecret, verifyTwoFAToken, generateQRCode } from "./auth";
+import speakeasy from "speakeasy";
 
 // ------------------------------------------------------------
 // EMAIL TEMPLATES
@@ -250,6 +250,18 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       });
       console.log("[SEED] Seeded database with shxdowmouse");
     }
+
+    // Ensure admin user record exists for 2FA state storage
+    const adminUser = await storage.getAdminUser("admin");
+    if (!adminUser) {
+      await storage.createAdminUser({
+        username: "admin",
+        passwordHash: "",
+        twoFaSecret: null,
+        twoFaEnabled: false,
+      });
+      console.log("[SEED] Created admin user record for 2FA management");
+    }
   } catch (error) {
     console.error("[SEED] Error seeding database:", error);
   }
@@ -324,22 +336,31 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
 
     try {
-      // Save to waitlist database
-      await storage.addToWaitlist(email, name);
+      // Save to waitlist database first (required)
+      const waitlistEntry = await storage.addToWaitlist(email, name);
+      console.log("[WAITLIST] Successfully added email to waitlist:", email);
 
-      // Send confirmation email
-      await sendEmail(
+      // Send confirmation email asynchronously (non-blocking)
+      sendEmail(
         email,
         "You're on the list – shxdowmouse",
         waitlistTemplate(email)
-      );
+      ).catch((error) => {
+        console.error("[WAITLIST] Failed to send confirmation email to", email, ":", error);
+        // Email failure is not critical - user is already added to waitlist
+      });
 
       res.json({
         success: true,
-        message: "Confirmation email sent successfully",
+        message: "Successfully added to waitlist. Check your email for confirmation.",
+        email: email
       });
     } catch (error) {
       console.error("[WAITLIST] Error:", error);
+      // Check if it's a duplicate email error
+      if (error instanceof Error && error.message.includes("unique")) {
+        return res.status(409).json({ message: "This email is already on the waitlist" });
+      }
       res.status(500).json({ message: "Failed to process signup" });
     }
   });
@@ -403,6 +424,27 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     } catch (error) {
       console.error("[UNSUBSCRIBE] Error:", error);
       res.status(500).json({ message: "Failed to unsubscribe" });
+    }
+  });
+
+  // Delete all waitlist entries
+  app.delete("/api/admin/waitlist", verifyAdminAuth, async (req, res) => {
+    try {
+      // Get all waitlist entries first
+      const waitlistData = await storage.getWaitlist();
+      
+      // Delete each entry
+      for (const entry of waitlistData) {
+        await storage.removeFromWaitlist(entry.email);
+      }
+
+      res.json({
+        success: true,
+        message: `Cleared ${waitlistData.length} entries from waitlist`,
+      });
+    } catch (error) {
+      console.error("[ADMIN] Clear waitlist error:", error);
+      res.status(500).json({ message: "Failed to clear waitlist" });
     }
   });
 
@@ -472,5 +514,156 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  // ----------------------------------------------------------
+  // 2FA ROUTES
+  // ----------------------------------------------------------
+
+  // Generate 2FA secret and QR code
+  app.post("/api/admin/2fa/setup", verifyAdminAuth, async (req, res) => {
+    const username = "admin"; // In a real app, this would come from the logged-in user
+
+    try {
+      const { secret, backupCodes } = generateTwoFASecret(username);
+
+      const totpUri = speakeasy.otpauthURL({
+        secret: secret,
+        label: `shxdowmouse (${username})`,
+        issuer: "shxdowmouse",
+        encoding: "base32",
+      });
+
+      const qrCodeDataUrl = await generateQRCode(totpUri);
+
+      res.json({
+        success: true,
+        secret,
+        qrCodeDataUrl,
+        backupCodes,
+      });
+    } catch (error) {
+      console.error("[2FA] Setup error:", error);
+      res.status(500).json({ message: "Failed to generate 2FA setup" });
+    }
+  });
+
+  // Verify and enable 2FA
+  app.post("/api/admin/2fa/verify", verifyAdminAuth, async (req, res) => {
+    const { secret, token } = req.body ?? {};
+    const username = "admin";
+
+    if (!secret || !token) {
+      return res.status(400).json({ message: "Secret and token are required" });
+    }
+
+    if (!verifyTwoFAToken(secret, token)) {
+      return res.status(401).json({ message: "Invalid 2FA token" });
+    }
+
+    try {
+      await storage.updateAdminUser2FA(username, secret, true);
+
+      res.json({
+        success: true,
+        message: "2FA enabled successfully",
+      });
+    } catch (error) {
+      console.error("[2FA] Verify error:", error);
+      res.status(500).json({ message: "Failed to enable 2FA" });
+    }
+  });
+
+  // Verify 2FA token (for login)
+  app.post("/api/admin/2fa/verify-login", async (req, res) => {
+    const { password, token } = req.body ?? {};
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (!adminPassword || password !== adminPassword) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+
+    try {
+      const admin = await storage.getAdminUser("admin");
+
+      if (!admin || !admin.twoFaEnabled || !admin.twoFaSecret) {
+        // 2FA not enabled, just return token
+        return res.json({
+          success: true,
+          token: password,
+          message: "Login successful",
+        });
+      }
+
+      if (token === "check") {
+        return res.status(400).json({
+          success: false,
+          message: "2FA required",
+          needs2FA: true,
+        });
+      }
+
+      if (!token) {
+        return res.status(400).json({ message: "2FA token is required" });
+      }
+
+      if (!verifyTwoFAToken(admin.twoFaSecret, token)) {
+        return res.status(401).json({ message: "Invalid 2FA token" });
+      }
+
+      res.json({
+        success: true,
+        token: password,
+        message: "Login successful",
+      });
+    } catch (error) {
+      console.error("[2FA] Login verification error:", error);
+      res.status(500).json({ message: "Failed to verify 2FA token" });
+    }
+  });
+
+  // Get 2FA status
+  app.get("/api/admin/2fa/status", verifyAdminAuth, async (_req, res) => {
+    try {
+      const admin = await storage.getAdminUser("admin");
+      res.json({
+        success: true,
+        enabled: Boolean(admin?.twoFaEnabled),
+      });
+    } catch (error) {
+      console.error("[2FA] Status error:", error);
+      res.status(500).json({ message: "Failed to fetch 2FA status" });
+    }
+  });
+
+  // Disable 2FA
+  app.post("/api/admin/2fa/disable", verifyAdminAuth, async (req, res) => {
+    const username = "admin";
+
+    try {
+      await storage.updateAdminUser2FA(username, null, false);
+
+      res.json({
+        success: true,
+        message: "2FA disabled successfully",
+      });
+    } catch (error) {
+      console.error("[2FA] Disable error:", error);
+      res.status(500).json({ message: "Failed to disable 2FA" });
+    }
+  });
+
+  // Logout all admin sessions
+  app.post("/api/admin/logout-all", verifyAdminAuth, async (req, res) => {
+    try {
+      await storage.deleteAllAdminSessions();
+
+      res.json({
+        success: true,
+        message: "All admin sessions have been cleared",
+      });
+    } catch (error) {
+      console.error("[ADMIN] Logout all error:", error);
+      res.status(500).json({ message: "Failed to logout all sessions" });
+    }
+  });
+
   return httpServer;
-}

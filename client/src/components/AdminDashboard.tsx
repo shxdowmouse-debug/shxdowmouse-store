@@ -34,7 +34,7 @@ interface Order {
   createdAt: string;
 }
 
-type TabType = "waitlist" | "orders" | "broadcast" | "analytics";
+type TabType = "waitlist" | "orders" | "broadcast" | "analytics" | "settings";
 
 export function AdminDashboard({ adminToken }: { adminToken: string }) {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -49,6 +49,15 @@ export function AdminDashboard({ adminToken }: { adminToken: string }) {
   const [broadcastLoading, setBroadcastLoading] = useState(false);
   const [broadcastSuccess, setBroadcastSuccess] = useState("");
   const [htmlPreview, setHtmlPreview] = useState("");
+  const [twoFAEnabled, setTwoFAEnabled] = useState<boolean | null>(null);
+  const [twoFASetupData, setTwoFASetupData] = useState<{
+    secret: string;
+    qrCodeDataUrl: string;
+    backupCodes: string[];
+  } | null>(null);
+  const [twoFAToken, setTwoFAToken] = useState("");
+  const [twoFALoading, setTwoFALoading] = useState(false);
+  const [twoFAVerifyMessage, setTwoFAVerifyMessage] = useState("");
   const [emailsHidden, setEmailsHidden] = useState(false);
   const [emailPassword] = useState("admin123");
   
@@ -68,10 +77,11 @@ export function AdminDashboard({ adminToken }: { adminToken: string }) {
       setLoading(true);
       const headers = { Authorization: `Bearer ${adminToken}` };
 
-      const [statsRes, waitlistRes, ordersRes] = await Promise.all([
+      const [statsRes, waitlistRes, ordersRes, twoFAStatusRes] = await Promise.all([
         fetch("/api/admin/stats", { headers }),
         fetch("/api/admin/waitlist", { headers }),
         fetch("/api/admin/orders", { headers }),
+        fetch("/api/admin/2fa/status", { headers }),
       ]);
 
       if (statsRes.ok) {
@@ -86,6 +96,10 @@ export function AdminDashboard({ adminToken }: { adminToken: string }) {
       }
       if (waitlistRes.ok) setWaitlist(await waitlistRes.json());
       if (ordersRes.ok) setOrders(await ordersRes.json());
+      if (twoFAStatusRes.ok) {
+        const statusData = await twoFAStatusRes.json();
+        setTwoFAEnabled(Boolean(statusData.enabled));
+      }
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
     } finally {
@@ -168,6 +182,67 @@ export function AdminDashboard({ adminToken }: { adminToken: string }) {
     window.location.reload();
   };
 
+  const handleLogoutAll = async () => {
+    try {
+      const response = await fetch("/api/admin/logout-all", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+        },
+      });
+
+      if (response.ok) {
+        setAlertContent({
+          title: "Success",
+          message: "All admin sessions have been logged out",
+          type: "success"
+        });
+        setShowAlertModal(true);
+        setTimeout(() => {
+          localStorage.removeItem("adminToken");
+          window.location.reload();
+        }, 2000);
+      }
+    } catch (error) {
+      console.error("Failed to logout all sessions:", error);
+      setAlertContent({
+        title: "Error",
+        message: "Failed to logout all sessions",
+        type: "error"
+      });
+      setShowAlertModal(true);
+    }
+  };
+
+  const handleClearWaitlist = async () => {
+    try {
+      const response = await fetch("/api/admin/waitlist", {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+        },
+      });
+
+      if (response.ok) {
+        setWaitlist([]);
+        setAlertContent({
+          title: "Success",
+          message: "Waitlist has been cleared",
+          type: "success"
+        });
+        setShowAlertModal(true);
+      }
+    } catch (error) {
+      console.error("Failed to clear waitlist:", error);
+      setAlertContent({
+        title: "Error",
+        message: "Failed to clear waitlist",
+        type: "error"
+      });
+      setShowAlertModal(true);
+    }
+  };
+
   const toggleEmailVisibility = (password: string) => {
     if (password === emailPassword) {
       setEmailsHidden(!emailsHidden);
@@ -189,6 +264,104 @@ export function AdminDashboard({ adminToken }: { adminToken: string }) {
     }
   };
 
+  const handleTwoFASetup = async () => {
+    try {
+      setTwoFALoading(true);
+      const response = await fetch("/api/admin/2fa/setup", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setTwoFASetupData(data);
+        setTwoFAEnabled(false);
+        setTwoFAVerifyMessage("Scan the QR code in your authenticator app and enter a token to verify.");
+      } else {
+        throw new Error("Failed to initialize 2FA setup");
+      }
+    } catch (error) {
+      console.error("2FA setup error:", error);
+      setAlertContent({
+        title: "2FA Setup Failed",
+        message: "Could not initialize two-factor authentication setup. Please try again.",
+        type: "error"
+      });
+      setShowAlertModal(true);
+    } finally {
+      setTwoFALoading(false);
+    }
+  };
+
+  const handleTwoFAVerify = async () => {
+    if (!twoFAToken) {
+      setTwoFAVerifyMessage("Enter the code from your authenticator app.");
+      return;
+    }
+
+    if (!twoFASetupData?.secret) {
+      setTwoFAVerifyMessage("Please initialize 2FA setup first.");
+      return;
+    }
+
+    try {
+      setTwoFALoading(true);
+      const response = await fetch("/api/admin/2fa/verify", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ secret: twoFASetupData.secret, token: twoFAToken }),
+      });
+
+      if (response.ok) {
+        setTwoFAVerifyMessage("Two-factor authentication enabled successfully.");
+        setTwoFAToken("");
+        setTwoFAEnabled(true);
+      } else {
+        const errorData = await response.json();
+        setTwoFAVerifyMessage(errorData?.message || "Invalid token. Try again.");
+      }
+    } catch (error) {
+      console.error("2FA verify error:", error);
+      setTwoFAVerifyMessage("Verification failed. Please try again.");
+    } finally {
+      setTwoFALoading(false);
+    }
+  };
+
+  const handleDeactivateTwoFA = async () => {
+    try {
+      setTwoFALoading(true);
+      const response = await fetch("/api/admin/2fa/disable", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        setTwoFAEnabled(false);
+        setTwoFASetupData(null);
+        setTwoFAToken("");
+        setTwoFAVerifyMessage("Two-factor authentication has been disabled.");
+      } else {
+        const errorData = await response.json();
+        setTwoFAVerifyMessage(errorData?.message || "Failed to disable two-factor authentication.");
+      }
+    } catch (error) {
+      console.error("2FA deactivate error:", error);
+      setTwoFAVerifyMessage("Unable to disable two-factor authentication.");
+    } finally {
+      setTwoFALoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black">
@@ -202,6 +375,7 @@ export function AdminDashboard({ adminToken }: { adminToken: string }) {
     { id: "orders", label: "Orders", icon: <Package className="w-4 h-4" /> },
     { id: "broadcast", label: "Broadcast", icon: <Mail className="w-4 h-4" /> },
     { id: "analytics", label: "Analytics", icon: <BarChart3 className="w-4 h-4" /> },
+    { id: "settings", label: "Settings", icon: <Settings className="w-4 h-4" /> },
   ];
 
   return (
@@ -679,6 +853,154 @@ export function AdminDashboard({ adminToken }: { adminToken: string }) {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Settings Tab */}
+          <AnimatePresence mode="wait">
+            {activeTab === "settings" && (
+              <motion.div
+                key="settings"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-6"
+              >
+                <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-lg p-6">
+                  <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                    <Settings className="w-5 h-5" />
+                    Admin Settings
+                  </h3>
+
+                  <div className="space-y-4">
+                    <div className="p-4 bg-slate-900/70 border border-slate-700 rounded-lg">
+                      <h4 className="font-semibold text-white mb-2">Two-Factor Authentication</h4>
+                      <p className="text-white/60 text-sm mb-4">
+                        Protect admin access with Google Authenticator or a compatible TOTP app. Enabling 2FA requires a verification code on each login.
+                      </p>
+                      {twoFAEnabled ? (
+                        <>
+                          <div className="mb-4">
+                            <span className="inline-flex items-center rounded-full bg-green-600/20 px-3 py-1 text-sm text-green-200">
+                              Enabled
+                            </span>
+                          </div>
+                          <Button
+                            onClick={handleDeactivateTwoFA}
+                            disabled={twoFALoading}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                          >
+                            {twoFALoading ? "Disabling..." : "Disable 2FA"}
+                          </Button>
+                          {twoFAVerifyMessage && (
+                            <p className="text-sm text-blue-200 mt-3">{twoFAVerifyMessage}</p>
+                          )}
+                        </>
+                      ) : twoFASetupData ? (
+                        <>
+                          <div className="space-y-4 mb-4">
+                            <img
+                              src={twoFASetupData.qrCodeDataUrl}
+                              alt="2FA QR code"
+                              className="rounded-lg border border-white/10"
+                            />
+                            <div className="text-sm text-white/70">
+                              Backup codes: {twoFASetupData.backupCodes.join(", ")}
+                            </div>
+                          </div>
+                          <div className="grid gap-3 sm:grid-cols-[1fr_auto] mb-4">
+                            <Button
+                              onClick={handleTwoFAVerify}
+                              disabled={twoFALoading}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                            >
+                              {twoFALoading ? "Verifying..." : "Verify & Enable"}
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                setTwoFASetupData(null);
+                                setTwoFAToken("");
+                                setTwoFAVerifyMessage("");
+                              }}
+                              variant="outline"
+                              className="text-white border-white/20 hover:bg-white/5"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                          <input
+                            value={twoFAToken}
+                            onChange={(e) => setTwoFAToken(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                            placeholder="Enter authenticator code"
+                            className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white"
+                            maxLength={6}
+                          />
+                          {twoFAVerifyMessage && (
+                            <p className="text-sm text-blue-200 mt-3">{twoFAVerifyMessage}</p>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <Button
+                            onClick={handleTwoFASetup}
+                            disabled={twoFALoading}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            {twoFALoading ? "Initializing..." : "Enable Two-Factor Authentication"}
+                          </Button>
+                          {twoFAVerifyMessage && (
+                            <p className="text-sm text-blue-200 mt-3">{twoFAVerifyMessage}</p>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    {/* Logout All Sessions */}
+                    <div className="p-4 bg-red-600/10 border border-red-600/50 rounded-lg">
+                      <h4 className="font-semibold text-white mb-2">Logout All Sessions</h4>
+                      <p className="text-white/60 text-sm mb-4">Force logout all currently logged-in admin users. This will require everyone to login again.</p>
+                      <Button
+                        onClick={() => {
+                          setAlertContent({
+                            title: "Confirm Logout All",
+                            message: "Are you sure you want to logout all admin sessions? This will require everyone to login again.",
+                            type: "warning"
+                          });
+                          setShowAlertModal(true);
+                          // Store the action to perform after confirmation
+                          (window as any).pendingAdminAction = "logoutAll";
+                        }}
+                        className="bg-red-600 hover:bg-red-700 text-white"
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Logout All Sessions
+                      </Button>
+                    </div>
+
+                    {/* Clear Waitlist */}
+                    <div className="p-4 bg-orange-600/10 border border-orange-600/50 rounded-lg">
+                      <h4 className="font-semibold text-white mb-2">Clear Waitlist</h4>
+                      <p className="text-white/60 text-sm mb-4">Remove all email addresses from the waitlist. This action cannot be undone.</p>
+                      <Button
+                        onClick={() => {
+                          setAlertContent({
+                            title: "Confirm Clear Waitlist",
+                            message: "Are you sure you want to clear the entire waitlist? This action cannot be undone.",
+                            type: "warning"
+                          });
+                          setShowAlertModal(true);
+                          // Store the action to perform after confirmation
+                          (window as any).pendingAdminAction = "clearWaitlist";
+                        }}
+                        className="bg-orange-600 hover:bg-orange-700 text-white"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Clear Waitlist ({waitlist.length} entries)
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
@@ -694,10 +1016,23 @@ export function AdminDashboard({ adminToken }: { adminToken: string }) {
       {/* Alert Modal */}
       <AlertModal
         isOpen={showAlertModal}
-        onClose={() => setShowAlertModal(false)}
+        onClose={() => {
+          setShowAlertModal(false);
+          (window as any).pendingAdminAction = null;
+        }}
         title={alertContent.title}
         message={alertContent.message}
         type={alertContent.type as any}
+        showCancel={alertContent.type === "warning"}
+        onConfirm={async () => {
+          const action = (window as any).pendingAdminAction;
+          if (action === "logoutAll") {
+            await handleLogoutAll();
+          } else if (action === "clearWaitlist") {
+            await handleClearWaitlist();
+          }
+          (window as any).pendingAdminAction = null;
+        }}
       />
     </div>
   );

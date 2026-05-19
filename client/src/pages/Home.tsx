@@ -112,13 +112,13 @@ export default function Home() {
                   </div>
 
                   {/* Image - Right */}
-                  <div className="bg-black/40 relative h-96 md:h-auto md:w-1/2 flex items-center justify-center order-1 md:order-2 rounded-3xl overflow-hidden group">
+                  <div className="bg-black/40 relative h-96 md:h-[500px] md:w-1/2 flex items-center justify-center order-1 md:order-2 rounded-3xl overflow-hidden group">
                     {/* White glow effect - more visible on hover */}
                     <div className="absolute inset-0 bg-white/5 group-hover:bg-white/15 rounded-3xl blur-2xl transition-all duration-300" />
                     <img
                       src={productImage}
                       alt="shxdowmouse one"
-                      className="h-full w-full object-cover p-0 scale-100 group-hover:scale-110 transition-transform duration-300 relative z-10"
+                      className="h-full w-full object-contain p-0 scale-100 group-hover:scale-110 transition-transform duration-300 relative z-10"
                       style={{
                         filter: "drop-shadow(0 0 30px rgba(255, 255, 255, 0.3))",
                       }}

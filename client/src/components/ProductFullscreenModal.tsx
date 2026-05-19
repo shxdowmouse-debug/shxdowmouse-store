@@ -56,6 +56,8 @@ export function ProductFullscreenModal({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+  const [mouseStart, setMouseStart] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const galleryRef = useRef<HTMLDivElement>(null);
   
   const goToNextImage = () => {
@@ -66,7 +68,7 @@ export function ProductFullscreenModal({
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
-  // Swipe handling
+  // Swipe handling for touch
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientX);
   };
@@ -88,6 +90,30 @@ export function ProductFullscreenModal({
     if (isRightSwipe) {
       goToPrevImage();
     }
+  };
+
+  // Mouse drag handling
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setMouseStart(e.clientX);
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    
+    const distance = mouseStart - e.clientX;
+    if (Math.abs(distance) > 50) {
+      if (distance > 0) {
+        goToNextImage();
+      } else {
+        goToPrevImage();
+      }
+      setIsDragging(false);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
   };
 
   // Keyboard navigation
@@ -132,7 +158,7 @@ export function ProductFullscreenModal({
             exit={{ opacity: 0, scale: 0.85, y: 40 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full h-[95vh] max-w-7xl bg-gradient-to-b from-black/50 via-black/40 to-black/50 border border-white/10 rounded-3xl p-4 md:p-8 lg:p-12 overflow-y-auto scrollbar-hide"
+            className="relative w-full max-h-[85vh] max-w-7xl bg-gradient-to-b from-black/50 via-black/40 to-black/50 border border-white/10 rounded-3xl p-4 md:p-8 overflow-hidden flex flex-col"
           >
             {/* Close Button */}
             <button
@@ -142,50 +168,58 @@ export function ProductFullscreenModal({
             >
               <X className="w-6 h-6 text-white" />
             </button>
-{/* Main Content - 3 Column Layout */}
-<div className="grid md:grid-cols-3 gap-6 md:gap-8 lg:gap-10 h-full">
 
-  {/* Left: Image Gallery */}
-  <motion.div
-    initial={{ opacity: 0, x: -50 }}
-    animate={{ opacity: 1, x: 0 }}
-    transition={{ duration: 0.5, delay: 0.1 }}
-    className="md:col-span-2 flex flex-col items-center justify-center gap-4"
-  >
-    {/* Main Image */}
-    <div
-      ref={galleryRef}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      className="relative w-full h-64 md:h-[380px] lg:h-[420px] bg-gradient-to-b from-black/40 to-black/20 rounded-2xl overflow-hidden flex items-center justify-center border border-white/10 cursor-grab active:cursor-grabbing group"
-    >
-      <AnimatePresence mode="wait">
-        <motion.img
-          key={currentImageIndex}
-          src={images[currentImageIndex]}
-          alt={`${productName} - View ${currentImageIndex + 1}`}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.4 }}
-          className="w-full h-full object-contain"
-          draggable={false}
-        />
-      </AnimatePresence>
-    </div>
-  </motion.div>
+            {/* Product Title */}
+            <div className="mb-6">
+              <h1 className="text-3xl md:text-4xl font-display font-bold text-white leading-tight">
+                shxdowmouse one
+              </h1>
+            </div>
 
-</div>
+            {/* Main Content */}
+            <div className="flex-1 min-h-0 grid md:grid-cols-3 gap-6 md:gap-8 overflow-y-auto">
+              {/* Left: Image Gallery */}
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="md:col-span-2 flex flex-col items-center justify-center gap-4"
+              >
+                {/* Main Image */}
+                <div
+                  ref={galleryRef}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  className="relative w-full aspect-square bg-gradient-to-b from-black/40 to-black/20 rounded-2xl overflow-hidden flex items-center justify-center border border-white/10 cursor-grab active:cursor-grabbing group"
+                >
+                  <AnimatePresence mode="wait">
+                    <motion.img
+                      key={currentImageIndex}
+                      src={images[currentImageIndex]}
+                      alt={`${productName} - View ${currentImageIndex + 1}`}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.4 }}
+                      className="w-full h-full object-contain p-4"
+                      draggable={false}
+                    />
+                  </AnimatePresence>
+
                   {/* Image Counter Badge */}
                   <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-md px-4 py-2 rounded-full text-sm text-white/90 font-medium border border-white/10">
                     {currentImageIndex + 1} <span className="text-white/50">/ {images.length}</span>
                   </div>
 
-                  {/* Swipe Hint */}
+                  {/* Swipe/Drag Hint */}
                   {images.length > 1 && (
                     <div className="absolute inset-0 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="text-white/30 text-xs">← Swipe</div>
-                      <div className="text-white/30 text-xs">Swipe →</div>
+                      <div className="text-white/30 text-xs">← Drag</div>
+                      <div className="text-white/30 text-xs">Drag →</div>
                     </div>
                   )}
                 </div>
@@ -193,25 +227,6 @@ export function ProductFullscreenModal({
                 {/* Navigation Controls */}
                 {images.length > 1 && (
                   <div className="w-full space-y-4">
-                    <div className="flex gap-3">
-                      <Button
-                        onClick={goToPrevImage}
-                        size="lg"
-                        className="flex-1 h-12 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold transition-all"
-                      >
-                        <ChevronLeft className="w-5 h-5 mr-2" />
-                        Previous
-                      </Button>
-                      <Button
-                        onClick={goToNextImage}
-                        size="lg"
-                        className="flex-1 h-12 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold transition-all"
-                      >
-                        Next
-                        <ChevronRight className="w-5 h-5 ml-2" />
-                      </Button>
-                    </div>
-
                     {/* Thumbnail Indicators */}
                     <div className="flex gap-2 w-full">
                       {images.map((_, index) => (
@@ -238,13 +253,10 @@ export function ProductFullscreenModal({
                 initial={{ opacity: 0, x: 50 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="flex flex-col gap-6"
+                className="flex flex-col gap-6 overflow-y-auto pr-2"
               >
-                {/* Product Title & Description */}
+                {/* Product Description */}
                 <div className="space-y-3">
-                  <h1 className="text-3xl md:text-4xl font-display font-bold text-white capitalize leading-tight">
-                    {productName}
-                  </h1>
                   <p className="text-white/70 leading-relaxed text-sm md:text-base">
                     {productDescription}
                   </p>
@@ -280,20 +292,40 @@ export function ProductFullscreenModal({
                     })}
                   </div>
                 </div>
-
-                {/* CTA Button */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                  className="mt-auto pt-4"
-                >
-                  <Button className="w-full h-12 rounded-2xl bg-gradient-to-r from-white to-white/90 text-black font-bold hover:from-white/95 hover:to-white/85 transition-all shadow-lg hover:shadow-xl">
-                    Stay Updated
-                  </Button>
-                </motion.div>
               </motion.div>
             </div>
+
+            {/* Bottom Button Row */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="mt-6 pt-4 border-t border-white/10 flex gap-3"
+            >
+              {images.length > 1 && (
+                <>
+                  <Button
+                    onClick={goToPrevImage}
+                    size="lg"
+                    className="flex-1 h-12 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold transition-all"
+                  >
+                    <ChevronLeft className="w-5 h-5 mr-2" />
+                    Previous
+                  </Button>
+                  <Button
+                    onClick={goToNextImage}
+                    size="lg"
+                    className="flex-1 h-12 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold transition-all"
+                  >
+                    Next
+                    <ChevronRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </>
+              )}
+              <Button className="flex-1 h-12 rounded-xl bg-gradient-to-r from-white to-white/90 text-black font-bold hover:from-white/95 hover:to-white/85 transition-all shadow-lg hover:shadow-xl">
+                Stay Updated
+              </Button>
+            </motion.div>
           </motion.div>
         </motion.div>
       )}
